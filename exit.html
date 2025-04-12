@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exit Parking</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #B8860B ;
+            text-align: center;
+        }
+
+        .container {
+            margin: auto;
+            width: 30%;
+            padding: 20px;
+            background-color: black;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px #B8860B;
+        }
+
+        h1 {
+            color: #B8860B;
+        }
+
+        label {
+            font-size: 18px;
+            color: #B8860B;
+            display: block;
+            margin-top: 15px;
+        }
+
+        input {
+            width: 40%;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            border: 1px solid #B8860B;
+            background-color: #222;
+            color: white;
+        }
+
+        .button-container {
+            margin-top: 20px;
+        }
+
+        button {
+            background-color: #B8860B;
+            color: black;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            display: block;
+            margin: 10px auto;
+            width: 50%;
+        }
+
+        button:hover {
+            background-color: #A07807;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Exit Parking</h1>
+
+    <div class="container">
+        <!-- Row 1 -->
+        <label for="vehicleNumber">Vehicle Number:</label>
+        <input type="text" id="vehicleNumber" placeholder="Enter vehicle number">
+
+        <!-- Row 2 -->
+        <label for="exitTime">Exit Time:</label>
+        <input type="time" id="exitTime">
+
+        <!-- Row 3 & Row 4 (Spacing) -->
+        <br><br>
+
+        <!-- Row 5 -->
+        <div class="button-container">
+            <button onclick="exitParking()">Exit Parking</button>
+        </div>
+
+        <!-- Row 6 -->
+        <div class="button-container">
+            <button onclick="goToDashboard()">Back to Dashboard</button>
+        </div>
+    </div>
+
+    <script>
+        function exitParking() {
+            let vehicleNumber = document.getElementById("vehicleNumber").value;
+            let exitTime = document.getElementById("exitTime").value;
+
+            if (vehicleNumber === "" || exitTime === "") {
+                alert("Please fill in all fields!");
+                return;
+            }
+
+            alert(`Vehicle ${vehicleNumber} exited at ${exitTime}`);
+            // You can send this data to the backend using fetch() or XMLHttpRequest
+        }
+
+        function goToDashboard() {
+            window.location.href = "dashboard.html"; // Update with the correct path if needed
+        }
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <style>
+        body { text-align: center; font-family: Arial, sans-serif; background: #222; color: #fff; }
+        .gate, .exit-btn, .home-btn {
+            margin: 20px;
+            padding: 15px;
+            background: #d4af37;
+            color: black;
+            border-radius: 10px;
+            font-size: 18px;
+            cursor: pointer;
+            display: inline-block;
+            width: 200px;
+            text-align: center;
+        }
+        .gate:hover, .exit-btn:hover, .home-btn:hover { background: #b9972b; }
+        .exit-btn { background: red; color: white; }
+        .exit-btn:hover { background: darkred; }
+        .home-btn { background: #007BFF; color: white; }
+        .home-btn:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <h1>Welcome to ParkXpert</h1>
+    <p>Select a gate to book your parking slot:</p>
+
+    <div class="gate" onclick="bookSlot('Gate 1')">Gate 1</div>
+    <div class="gate" onclick="bookSlot('Gate 2')">Gate 2</div>
+    <div class="gate" onclick="bookSlot('Gate 3')">Gate 3</div>
+
+    <br>
+    <div class="exit-btn" onclick="exitParking()">Exit Parking</div>
+    <div class="home-btn" onclick="goHome()">Home</div>
+
+    <script>
+        function bookSlot(gateName) {
+            window.location.href = "slot.html?gate=" + encodeURIComponent(gateName);
+        }
+
+        function exitParking() {
+            window.location.href = "exit.html"; // Redirect to exit confirmation page
+        }
+
+        function goHome() {
+            window.location.href = "index.html"; // Redirect to home page
+        }
+    </script>
+</body>
+</html>

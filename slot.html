@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ParkXpert - Book Slot</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Arial', sans-serif; }
+        body { background: linear-gradient(to right, #111, #333); color: #d4af37; text-align: center; height: 100vh; display: flex; flex-direction: column; align-items: center; }
+
+        /* Main Content */
+        .slot-content { margin-top: 50px; text-align: center; }
+        .slot-content h1 { font-size: 40px; font-weight: bold; }
+        .slot-content p { font-size: 18px; margin-top: 10px; }
+
+        /* Slot Details */
+        .slot-status {
+            background: black; padding: 15px; border-radius: 10px; width: 350px; 
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.5); margin-bottom: 20px;
+        }
+        .slot-status p { font-size: 18px; margin: 5px 0; }
+
+        /* Form */
+        .booking-form {
+            background: black; padding: 20px; border-radius: 10px; width: 350px;
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.5); margin-bottom: 20px;
+        }
+        .booking-form label { display: block; font-size: 18px; margin: 10px 0; }
+        .booking-form input {
+            width: 100%; padding: 10px; margin: 10px 0; border: 2px solid #d4af37;
+            border-radius: 5px; background: transparent; color: #d4af37; font-size: 16px;
+        }
+        .booking-form button {
+            width: 100%; padding: 10px; background: #d4af37; color: black; border: none;
+            border-radius: 5px; font-size: 16px; cursor: pointer; margin-top: 10px;
+        }
+        .booking-form button:hover { background: #b9972b; }
+
+        /* Booked Slot List */
+        .booked-slots {
+            background: black; padding: 15px; border-radius: 10px; width: 350px;
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.5); display: none;
+        }
+        .booked-slots h2 { font-size: 22px; margin-bottom: 10px; }
+        .booked-slots ul { list-style: none; padding: 0; }
+        .booked-slots li { font-size: 18px; padding: 8px 0; border-bottom: 1px solid #d4af37; }
+
+        /* Back Button */
+        .back-btn {
+            margin-top: 20px; padding: 10px 20px; font-size: 16px;
+            background: #d4af37; color: black; border: none; cursor: pointer; border-radius: 5px;
+        }
+        .back-btn:hover { background: #b9972b; }
+    </style>
+</head>
+<body>
+
+    <div class="slot-content">
+        <h1>Book Your Parking Slot</h1>
+        <p>Confirm your slot selection for <strong><span id="selectedGate"></span></strong></p>
+
+        <!-- Slot Availability -->
+        <div class="slot-status">
+            <p><strong>Total Slots:</strong> <span id="totalSlots">10</span></p>
+            <p><strong>Vacant Slots:</strong> <span id="vacantSlots">7</span></p>
+            <p><strong>Occupied Slots:</strong> <span id="occupiedSlots">3</span></p>
+        </div>
+
+        <!-- Booking Form -->
+        <div class="booking-form">
+            <label>Vehicle Number:</label>
+            <input type="text" id="vehicleNumber" placeholder="Enter vehicle number" required>
+
+            <label>Select Time:</label>
+            <input type="time" id="bookingTime" required>
+
+            <button onclick="confirmBooking()">Confirm Booking</button>
+        </div>
+
+        <!-- Booked Slot List -->
+        <div class="booked-slots" id="bookedSlotsContainer">
+            <h2>Booked Slots</h2>
+            <ul id="bookedSlotsList"></ul>
+        </div>
+
+        <button class="back-btn" onclick="goBack()">Back to Dashboard</button>
+    </div>
+
+    <script>
+        function getGateFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('gate') || "Unknown Gate";
+        }
+
+        let selectedGate = getGateFromURL();
+        document.getElementById("selectedGate").textContent = selectedGate;
+
+        let totalSlots = 10;
+        let occupiedSlots = 3;
+        let vacantSlots = totalSlots - occupiedSlots;
+
+        function updateSlotDisplay() {
+            document.getElementById("totalSlots").textContent = totalSlots;
+            document.getElementById("vacantSlots").textContent = vacantSlots;
+            document.getElementById("occupiedSlots").textContent = occupiedSlots;
+        }
+
+        function confirmBooking() {
+            let vehicleNumber = document.getElementById("vehicleNumber").value.trim();
+            let bookingTime = document.getElementById("bookingTime").value;
+
+            if (vehicleNumber === "" || bookingTime === "") {
+                alert("Please enter vehicle number and time!");
+                return;
+            }
+
+            if (vacantSlots > 0) {
+                vacantSlots--;
+                occupiedSlots++;
+                updateSlotDisplay();
+
+                let bookedSlot = `${vehicleNumber} - ${bookingTime} (${selectedGate})`;
+                let bookedSlotsList = document.getElementById("bookedSlotsList");
+
+                let listItem = document.createElement("li");
+                listItem.textContent = bookedSlot;
+                bookedSlotsList.appendChild(listItem);
+
+                document.getElementById("bookedSlotsContainer").style.display = "block";
+                alert("Parking Slot Confirmed at " + selectedGate);
+            } else {
+                alert("No vacant slots available!");
+            }
+        }
+
+        function goBack() {
+            window.location.href = "dashboard.html";
+        }
+
+        updateSlotDisplay();
+    </script>
+
+</body>
+</html>
