@@ -1,8 +1,8 @@
-#  **Smart Parking Slot Availability Management System (Frontend Only)**
+# **Smart Parking Slot Availability Management System (Frontend Only)**
 
 This project is a web-based interface designed to visualize real-time parking slot availability. It provides a clean and interactive layout that displays the status of parking slots (available or occupied) to the users. This version includes only the frontend implementation.
 
-## **Technologies Used**
+## **Technologies Used
 - HTML
 
 - CSS
