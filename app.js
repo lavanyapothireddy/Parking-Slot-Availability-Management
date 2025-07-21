@@ -2,6 +2,9 @@ document.addEventListener("DOMContentLoaded", () => {
     generateParkingSlots(); // Generate slots when the page loads
 });
 
+
+
+
 // Function to generate parking slots dynamically
 function generateParkingSlots() {
     const grid = document.getElementById("parkingSlotsGrid");
