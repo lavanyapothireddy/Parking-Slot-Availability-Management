@@ -66,5 +66,5 @@ This document includes visual representations of:
 - Add admin login panel to control slots manually
 
 - Enable slot reservation and payment integration
-## ** To View Live Preview of my Project**
+## **To View Live Preview of my Project**
 https://lavanyapothireddy.github.io/Parking-Slot-Availability-Management/#
