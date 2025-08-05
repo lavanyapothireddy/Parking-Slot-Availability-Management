@@ -1,7 +1,6 @@
-
 const express = require("express");
 const cors = require("cors");
-const                                        fs = require("fs");
+const fs = require("fs");
 const xlsx = require("xlsx");
 
 const app = express();
@@ -54,4 +53,5 @@ app.post("/add-vehicle", (req, res) => {
 
 const PORT = 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
 
