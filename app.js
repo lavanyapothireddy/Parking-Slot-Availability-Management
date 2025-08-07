@@ -1,6 +1,4 @@
-document
-    
-    .addEventListener("DOMContentLoaded",() => {
+document.addEventListener("DOMContentLoaded",() => {
     generateParkingSlots(); 
 });
 
@@ -41,4 +39,5 @@ function logout() {
     alert("Logging out...");
     window.location.href = "login.html"; 
 }
+
 
