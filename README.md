@@ -1,70 +1,102 @@
-# **Smart Parking Slot Availability Management System (Frontend Only)**
+# ParkXpert v2.0 — Smart Parking Slot Management
 
-This project is a web-based interface designed to visualize real-time parking slot availability. It provides a clean and interactive layout that displays the status of parking slots (available or occupied) to the users. This version includes only the frontend implementation.
+> Park Smarter, Not Harder
 
-## **Technologies Used**
-- HTML
+## Project Structure
 
-- CSS
+```
+parkxpert/
+├── public/                  # Frontend (all HTML pages)
+│   ├── index.html           # Landing + Login page
+│   ├── dashboard.html       # User dashboard (gate selection)
+│   ├── slot.html            # Slot booking page
+│   ├── exit.html            # Exit parking page
+│   └── admindashboard.html  # Admin panel
+│
+└── backend/                 # Node.js backend
+    ├── server.js            # Express API server
+    ├── package.json
+    └── data/                # Auto-created JSON data files
+        ├── vehicles.json    # Vehicle records
+        └── slots.json       # Slot map (30 slots, 3 gates)
+```
 
-- JavaScript
+## Quick Start
 
-- Visual Studio Code (for development)
+### 1. Install & Run Backend
+```bash
+cd backend
+npm install
+node server.js
+```
 
-- Git and GitHub (for version control)
+Server starts at **http://localhost:5000**  
+Frontend is served automatically at **http://localhost:5000**
 
-## **Features**
+### 2. Login Credentials
+| Role  | Username | Password |
+|-------|----------|----------|
+| User  | user     | 1234     |
+| Admin | admin    | 9876     |
 
-- Interactive user interface to display parking slot status
+---
 
-- Visual indication of available and occupied slots
+## API Endpoints
 
-- Fully responsive design compatible with mobile and desktop browsers
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/get-vehicles` | List all vehicle records |
+| GET | `/api/slots` | Get all 30 slot statuses |
+| GET | `/api/stats` | Summary stats (vacant, occupied) |
+| POST | `/api/add-vehicle` | Book a slot |
+| POST | `/api/exit-vehicle` | Process vehicle exit |
+| DELETE | `/api/delete-vehicle/:id` | Delete a record |
+| POST | `/api/reset-slots` | Reset all data (admin) |
 
-- Placeholder functionality for future backend/database integration
+### POST /api/add-vehicle — Body
+```json
+{
+  "vehicleNumber": "AP 09 AB 1234",
+  "gate": "Gate 1",
+  "slotId": 3,
+  "date": "25/05/2026",
+  "entryTime": "10:30",
+  "exitTime": ""
+}
+```
 
-- Easy to customize and scale for different parking areas
+### POST /api/exit-vehicle — Body
+```json
+{
+  "vehicleNumber": "AP 09 AB 1234",
+  "exitTime": "13:45"
+}
+```
 
-## **Project Modules**
+---
 
-1.**User Interface (UI):**
+## Features
 
-   - Static layout for parking slots
+### Frontend
+- Luxury black & gold design with Bebas Neue typography
+- Live slot map with color-coded availability
+- Interactive slot picker on booking page
+- Exit receipt generation
+- Real-time clock in dashboard
+- Admin record management with search & delete
+- Auto-refresh every 10–15 seconds
 
-   - Color-coded or status-based indicators (e.g., green for available, red for occupied)
+### Backend
+- REST API with Express.js
+- JSON file storage (no database setup needed)
+- 30 slots across 3 gates (10 each)
+- Auto slot assignment or manual slot selection
+- Slot freed automatically on exit or delete
 
-2. **JavaScript Logic:**
-
-    - Handles UI updates
-
-    - Placeholder functions to integrate backend in the future
-
-## **UML Diagrams**
-
-All UML diagrams for this project — including Use Case, Class, Activity, Sequence, State Chart, and Architecture diagrams — are available in the document below:
-
-### **File:** diagrams.docx
-
-This document includes visual representations of:
-
-- System structure and screen navigation
-
-- Interaction between UI components
-
-- Planned backend integration points
-
-- Workflow logic for slot status management
-
-## **Future Enhancements**
-
-- Add backend with Node.js / PHP / Python to handle real-time updates
-
-- Integrate MySQL or Firebase for storing slot data
-
-- Use IoT sensors to auto-detect slot status
-
-- Add admin login panel to control slots manually
-
-- Enable slot reservation and payment integration
-## **To View Live Preview of my Project**
-https://lavanyapothireddy.github.io/Parking-Slot-Availability-Management/#
+## Future Enhancements
+- JWT authentication (replace hardcoded credentials)
+- MySQL / MongoDB integration
+- IoT sensor integration for auto slot detection
+- Email/SMS notifications on booking
+- QR code generation for parking tickets
+- Payment integration
