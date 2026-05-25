@@ -1,69 +1,410 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - ParkXpert</title>
-    <style>
-        body { font-family: Arial, sans-serif; text-align: center; background: #111; color: #d4af37; }
-        h1 { margin-top: 50px; }
-        table { width: 80%; margin: 20px auto; border-collapse: collapse; background: black; color: white; }
-        th, td { padding: 10px; border: 1px solid #d4af37; text-align: center; }
-        th { background: #d4af37; color: black; }
-        .logout-btn {
-            background: red; color: white; padding: 10px 20px;
-            border: none; cursor: pointer; margin-top: 20px; font-size: 16px;
-        }
-        .logout-btn:hover { background: darkred; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard — ParkXpert</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --gold: #d4af37;
+      --gold-light: #f0d060;
+      --black: #0a0a0a;
+      --surface: #111111;
+      --surface2: #1a1a1a;
+      --text: #e8e0cc;
+      --muted: #6b6355;
+      --green: #4caf7d;
+      --red: #e05555;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--black);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 48px;
+      border-bottom: 1px solid #1e1e1e;
+      background: var(--surface);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .topbar-left { display: flex; align-items: center; gap: 20px; }
+
+    .topbar-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 24px;
+      letter-spacing: 3px;
+      color: var(--gold);
+    }
+
+    .admin-badge {
+      padding: 4px 12px;
+      background: rgba(212,175,55,0.1);
+      border: 1px solid rgba(212,175,55,0.3);
+      border-radius: 3px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+
+    .topbar-right { display: flex; gap: 12px; align-items: center; }
+
+    .btn {
+      padding: 8px 20px;
+      border-radius: 4px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-refresh { background: transparent; border: 1px solid #2a2a2a; color: var(--muted); }
+    .btn-refresh:hover { border-color: var(--gold); color: var(--gold); }
+
+    .btn-logout { background: transparent; border: 1px solid #3a1a1a; color: var(--red); }
+    .btn-logout:hover { background: var(--red); color: white; }
+
+    main { padding: 48px; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 40px;
+    }
+
+    .page-header h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 52px;
+      letter-spacing: 2px;
+    }
+
+    .page-header p { color: var(--muted); font-size: 15px; margin-top: 6px; }
+
+    .last-updated { font-size: 12px; color: var(--muted); }
+
+    /* Stats */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid #1e1e1e;
+      border-radius: 8px;
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+    }
+
+    .stat-card.s1::before { background: var(--gold); }
+    .stat-card.s2::before { background: var(--green); }
+    .stat-card.s3::before { background: var(--red); }
+    .stat-card.s4::before { background: #5588ff; }
+
+    .stat-label {
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .stat-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 48px;
+      line-height: 1;
+    }
+
+    .s1 .stat-num { color: var(--gold); }
+    .s2 .stat-num { color: var(--green); }
+    .s3 .stat-num { color: var(--red); }
+    .s4 .stat-num { color: #5588ff; }
+
+    /* Table */
+    .table-section h2 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 28px;
+      letter-spacing: 2px;
+      margin-bottom: 20px;
+    }
+
+    .table-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .search-input {
+      padding: 10px 16px;
+      background: var(--surface);
+      border: 1px solid #2a2a2a;
+      border-radius: 4px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      width: 280px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search-input:focus { border-color: var(--gold); }
+    .search-input::placeholder { color: #444; }
+
+    .record-count { font-size: 13px; color: var(--muted); }
+
+    .table-wrap {
+      background: var(--surface);
+      border: 1px solid #1e1e1e;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    table { width: 100%; border-collapse: collapse; }
+
+    thead th {
+      background: var(--surface2);
+      padding: 14px 20px;
+      text-align: left;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      border-bottom: 1px solid #1e1e1e;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid #1a1a1a;
+      transition: background 0.15s;
+    }
+
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: rgba(212,175,55,0.04); }
+
+    tbody td {
+      padding: 14px 20px;
+      font-size: 14px;
+    }
+
+    .td-id { color: var(--muted); font-size: 12px; }
+    .td-vehicle { font-weight: 600; color: var(--gold); letter-spacing: 1px; }
+    .td-gate { color: var(--text); }
+    .td-slot {
+      display: inline-block;
+      padding: 3px 10px;
+      background: rgba(212,175,55,0.08);
+      border: 1px solid rgba(212,175,55,0.2);
+      border-radius: 3px;
+      font-size: 12px;
+      color: var(--gold);
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 3px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    .status-active { background: rgba(76,175,125,0.15); border: 1px solid rgba(76,175,125,0.3); color: var(--green); }
+    .status-exited { background: rgba(100,100,100,0.15); border: 1px solid #333; color: var(--muted); }
+
+    .del-btn {
+      padding: 5px 12px;
+      background: transparent;
+      border: 1px solid #3a1a1a;
+      color: var(--red);
+      border-radius: 3px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .del-btn:hover { background: var(--red); color: white; }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px;
+      color: var(--muted);
+    }
+
+    .empty-state .empty-icon { font-size: 48px; margin-bottom: 16px; }
+    .empty-state p { font-size: 15px; }
+  </style>
 </head>
 <body>
 
-    <h1>Admin Dashboard</h1>
-    <button class="logout-btn" onclick="logout()">Logout</button>
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-logo">PARKXPERT</div>
+      <div class="admin-badge">Admin</div>
+    </div>
+    <div class="topbar-right">
+      <button class="btn btn-refresh" onclick="loadData()">↻ Refresh</button>
+      <button class="btn btn-logout" onclick="window.location.href='index.html'">Logout</button>
+    </div>
+  </div>
 
-    <h2>Vehicle Records</h2>
-    <table id="vehicleTable">
-        <thead>
+  <main>
+    <div class="page-header">
+      <div>
+        <h1>Admin Dashboard</h1>
+        <p>Real-time vehicle and slot management</p>
+      </div>
+      <div class="last-updated" id="lastUpdated">—</div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card s1">
+        <div class="stat-label">Total Vehicles</div>
+        <div class="stat-num" id="statTotal">0</div>
+      </div>
+      <div class="stat-card s2">
+        <div class="stat-label">Currently Parked</div>
+        <div class="stat-num" id="statActive">0</div>
+      </div>
+      <div class="stat-card s3">
+        <div class="stat-label">Exited Today</div>
+        <div class="stat-num" id="statExited">0</div>
+      </div>
+      <div class="stat-card s4">
+        <div class="stat-label">Vacant Slots</div>
+        <div class="stat-num" id="statVacant">—</div>
+      </div>
+    </div>
+
+    <div class="table-section">
+      <h2>Vehicle Records</h2>
+      <div class="table-toolbar">
+        <input type="text" class="search-input" id="searchInput" placeholder="Search vehicle number..." oninput="filterTable()">
+        <span class="record-count" id="recordCount">0 records</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
             <tr>
-                <th>ID</th>
-                <th>Vehicle Number</th>
-                <th>Date</th>
-                <th>Entry Time</th>
-                <th>Exit Time</th>
+              <th>ID</th>
+              <th>Vehicle No.</th>
+              <th>Gate</th>
+              <th>Slot</th>
+              <th>Date</th>
+              <th>Entry</th>
+              <th>Exit</th>
+              <th>Status</th>
+              <th>Action</th>
             </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+        <div class="empty-state" id="emptyState" style="display:none;">
+          <div class="empty-icon">🅿️</div>
+          <p>No vehicle records found.</p>
+        </div>
+      </div>
+    </div>
+  </main>
 
-    <script>
-        async function fetchVehicleData() {
-            const response = await fetch('http://localhost:5000/get-vehicles');
-            const data = await response.json();
+  <script>
+    const API = 'http://localhost:5000';
+    let allData = [];
 
-            const tableBody = document.querySelector("#vehicleTable tbody");
-            tableBody.innerHTML = ""; // Clear old data
+    async function loadData() {
+      try {
+        const [vRes, sRes] = await Promise.all([
+          fetch(`${API}/api/get-vehicles`),
+          fetch(`${API}/api/stats`)
+        ]);
+        allData = await vRes.json();
+        const stats = await sRes.json();
 
-            data.forEach(vehicle => {
-                const row = `<tr>
-                    <td>${vehicle.id}</td>
-                    <td>${vehicle.vehicleNumber}</td>
-                    <td>${vehicle.date}</td>
-                    <td>${vehicle.entryTime}</td>
-                    <td>${vehicle.exitTime}</td>
-                </tr>`;
-                tableBody.innerHTML += row;
-            });
-        }
+        const active = allData.filter(v => !v.exitTime).length;
+        const exited = allData.filter(v => v.exitTime).length;
 
-        function logout() {
-            window.location.href = "index.html"; // Redirect to homepage
-        }
+        document.getElementById('statTotal').textContent = allData.length;
+        document.getElementById('statActive').textContent = active;
+        document.getElementById('statExited').textContent = exited;
+        document.getElementById('statVacant').textContent = stats.vacant;
+        document.getElementById('lastUpdated').textContent = 'Updated: ' + new Date().toLocaleTimeString('en-IN');
 
-        fetchVehicleData();
-    </script>
+        renderTable(allData);
+      } catch {
+        renderTable([]);
+        document.getElementById('lastUpdated').textContent = 'Server offline';
+      }
+    }
 
+    function renderTable(data) {
+      const tbody = document.getElementById('tableBody');
+      const empty = document.getElementById('emptyState');
+      document.getElementById('recordCount').textContent = `${data.length} record${data.length !== 1 ? 's' : ''}`;
+
+      if (data.length === 0) {
+        tbody.innerHTML = '';
+        empty.style.display = 'block';
+        return;
+      }
+
+      empty.style.display = 'none';
+      tbody.innerHTML = data.map(v => `
+        <tr>
+          <td class="td-id">#${v.id}</td>
+          <td class="td-vehicle">${v.vehicleNumber || '—'}</td>
+          <td class="td-gate">${v.gate || '—'}</td>
+          <td><span class="td-slot">${v.slotId ? 'S' + v.slotId : '—'}</span></td>
+          <td>${v.date || '—'}</td>
+          <td>${v.entryTime || '—'}</td>
+          <td>${v.exitTime || '—'}</td>
+          <td><span class="status-badge ${v.exitTime ? 'status-exited' : 'status-active'}">${v.exitTime ? 'EXITED' : 'ACTIVE'}</span></td>
+          <td><button class="del-btn" onclick="deleteRecord(${v.id})">Delete</button></td>
+        </tr>
+      `).join('');
+    }
+
+    function filterTable() {
+      const q = document.getElementById('searchInput').value.toLowerCase();
+      const filtered = allData.filter(v => (v.vehicleNumber || '').toLowerCase().includes(q));
+      renderTable(filtered);
+    }
+
+    async function deleteRecord(id) {
+      if (!confirm('Delete this record?')) return;
+      try {
+        await fetch(`${API}/api/delete-vehicle/${id}`, { method: 'DELETE' });
+        await loadData();
+      } catch {
+        alert('Could not delete — server offline.');
+      }
+    }
+
+    loadData();
+    setInterval(loadData, 15000);
+  </script>
 </body>
 </html>
-
-
