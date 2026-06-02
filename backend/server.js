@@ -1,225 +1,110 @@
 /**
- * ParkXpert Backend Server
- * Express + JSON file storage (drop-in, no native modules needed)
- * Port: 5000
+ * ParkXpert Backend Server v3
+ * Express + JSON file storage · Port 5000
  */
-
 const express = require('express');
-const cors = require('cors');
-const fs = require('fs');
-const path = require('path');
+const cors    = require('cors');
+const fs      = require('fs');
+const path    = require('path');
 
-const app = express();
+const app  = express();
 const PORT = 5000;
 
-// ── Middleware ──
 app.use(cors());
 app.use(express.json());
-
-// Serve frontend files
 app.use(express.static(path.join(__dirname, '../public')));
 
-// ── Data Files ──
-const DATA_DIR = path.join(__dirname, 'data');
-const VEHICLES_FILE = path.join(DATA_DIR, 'vehicles.json');
-const SLOTS_FILE = path.join(DATA_DIR, 'slots.json');
+const DATA = path.join(__dirname, 'data');
+const F    = { v: path.join(DATA,'vehicles.json'), s: path.join(DATA,'slots.json'), u: path.join(DATA,'users.json') };
 
-// Ensure data directory exists
-if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+if (!fs.existsSync(DATA)) fs.mkdirSync(DATA, { recursive: true });
 
-// ── Helpers ──
-function readJSON(file, fallback) {
-  try {
-    if (!fs.existsSync(file)) return fallback;
-    return JSON.parse(fs.readFileSync(file, 'utf8'));
-  } catch {
-    return fallback;
-  }
-}
+const rj = (f, d=[]) => { try { if (!fs.existsSync(f)) return d; return JSON.parse(fs.readFileSync(f,'utf8')); } catch { return d; } };
+const wj = (f, d)    => fs.writeFileSync(f, JSON.stringify(d, null, 2));
 
-function writeJSON(file, data) {
-  fs.writeFileSync(file, JSON.stringify(data, null, 2));
-}
-
-// Initialize slots if not exist (30 total: 10 per gate)
 function initSlots() {
-  if (!fs.existsSync(SLOTS_FILE)) {
-    const slots = Array.from({ length: 30 }, (_, i) => ({
-      id: i + 1,
-      gate: `Gate ${Math.floor(i / 10) + 1}`,
-      occupied: false,
-      vehicleNumber: null
-    }));
-    writeJSON(SLOTS_FILE, slots);
-  }
+  if (!fs.existsSync(F.s)) wj(F.s, Array.from({length:30},(_,i)=>({id:i+1,gate:`Gate ${Math.floor(i/10)+1}`,occupied:false,vehicleNumber:null})));
 }
+function initUsers() {
+  if (!fs.existsSync(F.u)) wj(F.u,[
+    {id:1,name:'Default User',email:'user@parkxpert.com',password:'1234',role:'user'},
+    {id:2,name:'Admin',email:'admin@parkxpert.com',password:'9876',role:'admin'}
+  ]);
+}
+initSlots(); initUsers();
 
-initSlots();
-
-// ── Routes ──
-
-// GET all vehicles
-app.get('/api/get-vehicles', (req, res) => {
-  const data = readJSON(VEHICLES_FILE, []);
-  res.json(data);
+// ── Auth ──
+app.post('/api/register', (req, res) => {
+  const {name,email,password,role} = req.body;
+  if (!name||!email||!password||!role) return res.status(400).json({success:false,message:'All fields required.'});
+  const users = rj(F.u,[]);
+  if (users.find(u=>u.email.toLowerCase()===email.toLowerCase())) return res.status(409).json({success:false,message:'Email already registered.'});
+  const user = {id:users.length?Math.max(...users.map(u=>u.id))+1:1,name,email:email.toLowerCase(),password,role};
+  users.push(user); wj(F.u,users);
+  res.json({success:true,user:{id:user.id,name:user.name,role:user.role}});
 });
 
-// GET slot map
-app.get('/api/slots', (req, res) => {
-  const slots = readJSON(SLOTS_FILE, []);
-  res.json(slots);
+app.post('/api/login', (req, res) => {
+  const {email,password} = req.body;
+  const users = rj(F.u,[]);
+  const user  = users.find(u=>u.email.toLowerCase()===email.toLowerCase()&&u.password===password);
+  if (!user) return res.status(401).json({success:false,message:'Invalid email or password.'});
+  res.json({success:true,user:{id:user.id,name:user.name,role:user.role}});
 });
 
-// GET stats
+// ── Data ──
+app.get('/api/slots',        (req,res)=>res.json(rj(F.s,[])));
+app.get('/api/get-vehicles', (req,res)=>res.json(rj(F.v,[])));
+app.get('/api/users',        (req,res)=>res.json(rj(F.u,[]).map(u=>({id:u.id,name:u.name,email:u.email,role:u.role}))));
+
 app.get('/api/stats', (req, res) => {
-  const slots = readJSON(SLOTS_FILE, []);
-  const vehicles = readJSON(VEHICLES_FILE, []);
-  const vacant = slots.filter(s => !s.occupied).length;
-  const occupied = slots.filter(s => s.occupied).length;
-  res.json({
-    total: slots.length,
-    vacant,
-    occupied,
-    totalVehicles: vehicles.length,
-    activeVehicles: vehicles.filter(v => !v.exitTime).length
-  });
+  const s=rj(F.s,[]), v=rj(F.v,[]);
+  res.json({total:s.length,vacant:s.filter(x=>!x.occupied).length,occupied:s.filter(x=>x.occupied).length,
+    totalVehicles:v.length,activeVehicles:v.filter(x=>!x.exitTime).length,exitedVehicles:v.filter(x=>!!x.exitTime).length});
 });
 
-// POST add vehicle (book slot)
 app.post('/api/add-vehicle', (req, res) => {
-  const { vehicleNumber, gate, slotId, date, entryTime, exitTime } = req.body;
-
-  if (!vehicleNumber || !entryTime) {
-    return res.status(400).json({ success: false, message: 'vehicleNumber and entryTime are required.' });
-  }
-
-  // Load data
-  const vehicles = readJSON(VEHICLES_FILE, []);
-  const slots = readJSON(SLOTS_FILE, []);
-
-  // Find an available slot (auto-assign if slotId not given, or use provided)
-  let targetSlotId = slotId ? Number(slotId) : null;
-  let targetSlot = null;
-
-  if (targetSlotId) {
-    targetSlot = slots.find(s => s.id === targetSlotId);
-    if (targetSlot && targetSlot.occupied) {
-      return res.status(409).json({ success: false, message: `Slot ${targetSlotId} is already occupied.` });
-    }
-  } else {
-    // Auto-assign first available slot in requested gate
-    const gateSlots = gate ? slots.filter(s => s.gate === gate && !s.occupied) : slots.filter(s => !s.occupied);
-    targetSlot = gateSlots[0];
-    if (!targetSlot) {
-      return res.status(409).json({ success: false, message: 'No slots available.' });
-    }
-    targetSlotId = targetSlot.id;
-  }
-
-  // Create record
-  const newRecord = {
-    id: vehicles.length > 0 ? Math.max(...vehicles.map(v => v.id)) + 1 : 1,
-    vehicleNumber: vehicleNumber.toUpperCase(),
-    gate: gate || (targetSlot ? targetSlot.gate : 'Gate 1'),
-    slotId: targetSlotId,
-    date: date || new Date().toLocaleDateString('en-IN'),
-    entryTime,
-    exitTime: exitTime || ''
-  };
-
-  vehicles.push(newRecord);
-  writeJSON(VEHICLES_FILE, vehicles);
-
-  // Mark slot occupied
-  const slotIndex = slots.findIndex(s => s.id === targetSlotId);
-  if (slotIndex !== -1) {
-    slots[slotIndex].occupied = true;
-    slots[slotIndex].vehicleNumber = vehicleNumber.toUpperCase();
-    writeJSON(SLOTS_FILE, slots);
-  }
-
-  res.json({ success: true, message: 'Vehicle booked successfully!', data: newRecord });
+  const {vehicleNumber,gate,slotId,date,entryTime} = req.body;
+  if (!vehicleNumber||!entryTime) return res.status(400).json({success:false,message:'vehicleNumber and entryTime required.'});
+  const vehicles=rj(F.v,[]), slots=rj(F.s,[]);
+  const sid = slotId ? Number(slotId) : (slots.find(s=>s.gate===gate&&!s.occupied)||{}).id;
+  if (!sid) return res.status(409).json({success:false,message:'No slots available.'});
+  const slot=slots.find(s=>s.id===sid);
+  if (slot?.occupied) return res.status(409).json({success:false,message:'Slot already occupied.'});
+  const rec={id:vehicles.length?Math.max(...vehicles.map(v=>v.id))+1:1,vehicleNumber:vehicleNumber.toUpperCase(),gate,slotId:sid,date:date||new Date().toLocaleDateString('en-IN'),entryTime,exitTime:''};
+  vehicles.push(rec); wj(F.v,vehicles);
+  const si=slots.findIndex(s=>s.id===sid);
+  if(si!==-1){slots[si].occupied=true;slots[si].vehicleNumber=vehicleNumber.toUpperCase();} wj(F.s,slots);
+  res.json({success:true,data:rec});
 });
 
-// POST exit vehicle
 app.post('/api/exit-vehicle', (req, res) => {
-  const { vehicleNumber, exitTime } = req.body;
-
-  if (!vehicleNumber) {
-    return res.status(400).json({ success: false, message: 'vehicleNumber is required.' });
-  }
-
-  const vehicles = readJSON(VEHICLES_FILE, []);
-  const slots = readJSON(SLOTS_FILE, []);
-
-  // Find latest active record for this vehicle
-  const idx = vehicles.slice().reverse().findIndex(
-    v => v.vehicleNumber === vehicleNumber.toUpperCase() && !v.exitTime
-  );
-
-  if (idx === -1) {
-    return res.status(404).json({ success: false, message: 'No active record found for this vehicle.' });
-  }
-
-  // idx is reversed, get actual index
-  const actualIdx = vehicles.length - 1 - idx;
-  vehicles[actualIdx].exitTime = exitTime || new Date().toTimeString().slice(0,5);
-
-  // Free the slot
-  const slotId = vehicles[actualIdx].slotId;
-  const slotIndex = slots.findIndex(s => s.id === slotId);
-  if (slotIndex !== -1) {
-    slots[slotIndex].occupied = false;
-    slots[slotIndex].vehicleNumber = null;
-    writeJSON(SLOTS_FILE, slots);
-  }
-
-  writeJSON(VEHICLES_FILE, vehicles);
-  res.json({ success: true, message: 'Exit processed.', data: vehicles[actualIdx] });
+  const {vehicleNumber,exitTime}=req.body;
+  if(!vehicleNumber) return res.status(400).json({success:false,message:'vehicleNumber required.'});
+  const vehicles=rj(F.v,[]),slots=rj(F.s,[]);
+  let idx=-1;
+  for(let i=vehicles.length-1;i>=0;i--){if(vehicles[i].vehicleNumber===vehicleNumber.toUpperCase()&&!vehicles[i].exitTime){idx=i;break;}}
+  if(idx===-1) return res.status(404).json({success:false,message:'No active record found.'});
+  vehicles[idx].exitTime=exitTime||new Date().toTimeString().slice(0,5);
+  const si=slots.findIndex(s=>s.id===vehicles[idx].slotId);
+  if(si!==-1){slots[si].occupied=false;slots[si].vehicleNumber=null;} wj(F.s,slots); wj(F.v,vehicles);
+  res.json({success:true,data:vehicles[idx]});
 });
 
-// DELETE vehicle record
 app.delete('/api/delete-vehicle/:id', (req, res) => {
-  const id = parseInt(req.params.id);
-  let vehicles = readJSON(VEHICLES_FILE, []);
-  const slots = readJSON(SLOTS_FILE, []);
-
-  const target = vehicles.find(v => v.id === id);
-  if (!target) {
-    return res.status(404).json({ success: false, message: 'Record not found.' });
-  }
-
-  // Free slot if still occupied
-  if (!target.exitTime && target.slotId) {
-    const slotIndex = slots.findIndex(s => s.id === target.slotId);
-    if (slotIndex !== -1) {
-      slots[slotIndex].occupied = false;
-      slots[slotIndex].vehicleNumber = null;
-      writeJSON(SLOTS_FILE, slots);
-    }
-  }
-
-  vehicles = vehicles.filter(v => v.id !== id);
-  writeJSON(VEHICLES_FILE, vehicles);
-  res.json({ success: true, message: 'Record deleted.' });
+  const id=parseInt(req.params.id);
+  let vehicles=rj(F.v,[]);const slots=rj(F.s,[]);
+  const t=vehicles.find(v=>v.id===id);
+  if(!t) return res.status(404).json({success:false,message:'Not found.'});
+  if(!t.exitTime&&t.slotId){const si=slots.findIndex(s=>s.id===t.slotId);if(si!==-1){slots[si].occupied=false;slots[si].vehicleNumber=null;}wj(F.s,slots);}
+  wj(F.v,vehicles.filter(v=>v.id!==id));
+  res.json({success:true});
 });
 
-// Reset all slots (admin utility)
-app.post('/api/reset-slots', (req, res) => {
-  const slots = Array.from({ length: 30 }, (_, i) => ({
-    id: i + 1,
-    gate: `Gate ${Math.floor(i / 10) + 1}`,
-    occupied: false,
-    vehicleNumber: null
-  }));
-  writeJSON(SLOTS_FILE, slots);
-  writeJSON(VEHICLES_FILE, []);
-  res.json({ success: true, message: 'All slots and records reset.' });
+app.post('/api/reset', (req, res) => {
+  wj(F.s,Array.from({length:30},(_,i)=>({id:i+1,gate:`Gate ${Math.floor(i/10)+1}`,occupied:false,vehicleNumber:null})));
+  wj(F.v,[]);
+  res.json({success:true});
 });
 
-// ── Start ──
-app.listen(PORT, () => {
-  console.log(`\n🚗 ParkXpert Server running at http://localhost:${PORT}`);
-  console.log(`📂 Serving frontend from: ${path.join(__dirname, '../public')}`);
-  console.log(`💾 Data stored in: ${DATA_DIR}\n`);
-});
+app.listen(PORT, () => console.log(`\n🚗  ParkXpert → http://localhost:${PORT}\n`));
