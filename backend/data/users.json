@@ -1,0 +1,4 @@
+[
+  {"id":1,"name":"Default User","email":"user@parkxpert.com","password":"1234","role":"user"},
+  {"id":2,"name":"Admin","email":"admin@parkxpert.com","password":"9876","role":"admin"}
+]
