@@ -1,481 +1,149 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Book Slot — ParkXpert</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <title>Exit Parking — ParkXpert</title>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --gold: #d4af37;
-      --gold-light: #f0d060;
-      --black: #0a0a0a;
-      --surface: #111111;
-      --surface2: #1a1a1a;
-      --text: #e8e0cc;
-      --muted: #6b6355;
-      --green: #4caf7d;
-      --red: #e05555;
-    }
-
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    body {
-      font-family: 'DM Sans', sans-serif;
-      background: var(--black);
-      color: var(--text);
-      min-height: 100vh;
-    }
-
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 20px 48px;
-      border-bottom: 1px solid #1e1e1e;
-      background: var(--surface);
-    }
-
-    .topbar-logo {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 24px;
-      letter-spacing: 3px;
-      color: var(--gold);
-    }
-
-    .back-btn {
-      padding: 8px 20px;
-      background: transparent;
-      border: 1px solid #2a2a2a;
-      color: var(--muted);
-      border-radius: 4px;
-      cursor: pointer;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 13px;
-      transition: all 0.2s;
-    }
-
-    .back-btn:hover { border-color: var(--gold); color: var(--gold); }
-
-    main {
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 48px;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 32px;
-    }
-
-    .section-header { grid-column: 1 / -1; margin-bottom: 8px; }
-
-    .section-header h1 {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 48px;
-      letter-spacing: 2px;
-    }
-
-    .gate-badge {
-      display: inline-block;
-      padding: 4px 14px;
-      background: rgba(212,175,55,0.1);
-      border: 1px solid rgba(212,175,55,0.3);
-      border-radius: 3px;
-      color: var(--gold);
-      font-size: 13px;
-      letter-spacing: 1px;
-      margin-top: 8px;
-    }
-
-    /* Left column: status */
-    .status-panel {
-      background: var(--surface);
-      border: 1px solid #1e1e1e;
-      border-radius: 8px;
-      padding: 28px;
-    }
-
-    .status-panel h2 {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 22px;
-      letter-spacing: 2px;
-      color: var(--text);
-      margin-bottom: 24px;
-    }
-
-    .stat-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 14px 0;
-      border-bottom: 1px solid #1e1e1e;
-    }
-
-    .stat-row:last-child { border-bottom: none; }
-
-    .stat-row-label { font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
-
-    .stat-row-val {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 28px;
-    }
-
-    .stat-row-val.gold { color: var(--gold); }
-    .stat-row-val.green { color: var(--green); }
-    .stat-row-val.red { color: var(--red); }
-
-    /* Slot visual */
-    .mini-slots {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 6px;
-      margin-top: 20px;
-    }
-
-    .mini-slot {
-      aspect-ratio: 1;
-      border-radius: 4px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 10px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: transform 0.15s;
-    }
-
-    .mini-slot:hover { transform: scale(1.15); }
-    .mini-slot.avail { background: rgba(76,175,125,0.2); border: 1px solid rgba(76,175,125,0.5); color: var(--green); }
-    .mini-slot.occ { background: rgba(224,85,85,0.15); border: 1px solid rgba(224,85,85,0.3); color: var(--red); }
-    .mini-slot.selected { background: var(--gold); color: var(--black); border-color: var(--gold); }
-
-    /* Right column: form */
-    .booking-panel {
-      background: var(--surface);
-      border: 1px solid #1e1e1e;
-      border-top: 3px solid var(--gold);
-      border-radius: 8px;
-      padding: 28px;
-    }
-
-    .booking-panel h2 {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 22px;
-      letter-spacing: 2px;
-      color: var(--text);
-      margin-bottom: 24px;
-    }
-
-    .form-group { margin-bottom: 20px; }
-
-    .form-group label {
-      display: block;
-      font-size: 11px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 8px;
-    }
-
-    .form-group input, .form-group select {
-      width: 100%;
-      padding: 12px 16px;
-      background: var(--surface2);
-      border: 1px solid #2a2a2a;
-      border-radius: 4px;
-      color: var(--text);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 15px;
-      transition: border-color 0.2s;
-      outline: none;
-    }
-
-    .form-group input:focus, .form-group select:focus { border-color: var(--gold); }
-
-    .form-group input::placeholder { color: #444; }
-
-    .selected-slot-display {
-      padding: 12px;
-      background: var(--surface2);
-      border: 1px solid rgba(212,175,55,0.3);
-      border-radius: 4px;
-      color: var(--gold);
-      font-size: 15px;
-      font-weight: 600;
-      min-height: 44px;
-    }
-
-    .submit-btn {
-      width: 100%;
-      padding: 14px;
-      background: var(--gold);
-      color: var(--black);
-      border: none;
-      border-radius: 4px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 15px;
-      font-weight: 700;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .submit-btn:hover {
-      background: var(--gold-light);
-      box-shadow: 0 4px 20px rgba(212,175,55,0.3);
-    }
-
-    .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-    /* Booked list */
-    .booked-section { grid-column: 1 / -1; }
-
-    .booked-section h2 {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 28px;
-      letter-spacing: 2px;
-      margin-bottom: 16px;
-    }
-
-    .booking-record {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 16px 20px;
-      background: var(--surface);
-      border: 1px solid #1e1e1e;
-      border-radius: 6px;
-      margin-bottom: 8px;
-    }
-
-    .booking-record-left { font-weight: 600; }
-    .booking-record-right { font-size: 13px; color: var(--muted); }
-    .booking-badge {
-      display: inline-block;
-      padding: 3px 10px;
-      background: rgba(76,175,125,0.15);
-      border: 1px solid rgba(76,175,125,0.3);
-      color: var(--green);
-      border-radius: 3px;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 1px;
-      margin-left: 10px;
-    }
-
-    .alert-msg {
-      padding: 12px 16px;
-      border-radius: 4px;
-      margin-top: 12px;
-      font-size: 14px;
-      display: none;
-    }
-
-    .alert-success { background: rgba(76,175,125,0.1); border: 1px solid rgba(76,175,125,0.3); color: var(--green); }
-    .alert-error { background: rgba(224,85,85,0.1); border: 1px solid rgba(224,85,85,0.3); color: var(--red); }
+    :root{--gold:#d4af37;--gold-light:#f0d060;--black:#0a0a0a;--surface:#111111;--surface2:#1a1a1a;--border:#242428;--text:#e8e0cc;--muted:#6b6355;--green:#4caf7d;--red:#e05555;}
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'DM Sans',sans-serif;background:var(--black);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
+    .topbar{display:flex;justify-content:space-between;align-items:center;padding:20px 48px;border-bottom:1px solid #1e1e1e;background:var(--surface);}
+    .topbar-logo{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:3px;color:var(--gold);}
+    .back-btn{padding:8px 20px;background:transparent;border:1px solid #2a2a2a;color:var(--muted);border-radius:4px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;transition:all 0.2s;}
+    .back-btn:hover{border-color:var(--gold);color:var(--gold);}
+    main{flex:1;display:flex;justify-content:center;align-items:center;padding:48px;}
+    .exit-container{width:100%;max-width:520px;}
+    .page-tag{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--red);margin-bottom:12px;}
+    h1{font-family:'Bebas Neue',sans-serif;font-size:56px;letter-spacing:2px;margin-bottom:8px;}
+    .sub{color:var(--muted);font-size:15px;margin-bottom:40px;}
+    .form-card{background:var(--surface);border:1px solid #1e1e1e;border-top:3px solid var(--red);border-radius:8px;padding:36px;}
+    .form-group{margin-bottom:20px;}
+    .form-group label{display:block;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+    .form-group input{width:100%;padding:12px 16px;background:var(--surface2);border:1px solid #2a2a2a;border-radius:4px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;transition:border-color 0.2s;outline:none;}
+    .form-group input:focus{border-color:var(--red);}
+    .form-group input::placeholder{color:#444;}
+    .exit-btn{width:100%;padding:14px;background:var(--red);color:white;border:none;border-radius:4px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all 0.2s;margin-bottom:12px;}
+    .exit-btn:hover{background:#cc3333;box-shadow:0 4px 20px rgba(224,85,85,0.3);}
+    .receipt{display:none;margin-top:28px;background:var(--surface2);border:1px solid rgba(76,175,125,0.3);border-radius:8px;padding:24px;}
+    .receipt-title{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--green);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+    .receipt-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #2a2a2a;font-size:14px;}
+    .receipt-row:last-child{border-bottom:none;}
+    .receipt-label{color:var(--muted);}
+    .receipt-val{font-weight:600;}
+    .receipt-val.gold{color:var(--gold);}
+    .receipt-val.green{color:var(--green);}
+    .alert-error{padding:12px 16px;background:rgba(224,85,85,0.1);border:1px solid rgba(224,85,85,0.3);color:var(--red);border-radius:4px;font-size:14px;margin-top:12px;display:none;}
   </style>
 </head>
 <body>
-
   <div class="topbar">
     <div class="topbar-logo">PARKXPERT</div>
-    <button class="back-btn" onclick="window.location.href='dashboard.html'">← Back to Dashboard</button>
+    <button class="back-btn" onclick="window.location.href='dashboard.html'">← Dashboard</button>
   </div>
-
   <main>
-    <div class="section-header">
-      <h1>Book Parking Slot</h1>
-      <div class="gate-badge" id="gateBadge">Loading...</div>
-    </div>
-
-    <div class="status-panel">
-      <h2>Slot Status</h2>
-      <div class="stat-row">
-        <span class="stat-row-label">Total</span>
-        <span class="stat-row-val gold">10</span>
+    <div class="exit-container">
+      <div class="page-tag">Exit Process</div>
+      <h1>Exit Parking</h1>
+      <p class="sub">Enter your vehicle number to process exit and free the slot.</p>
+      <div class="form-card">
+        <div class="form-group">
+          <label>Vehicle Number</label>
+          <input type="text" id="vehicleNumber" placeholder="e.g. AP 09 AB 1234">
+        </div>
+        <div class="form-group">
+          <label>Exit Time</label>
+          <input type="time" id="exitTime">
+        </div>
+        <button class="exit-btn" onclick="processExit()">Process Exit</button>
+        <div class="alert-error" id="errMsg"></div>
       </div>
-      <div class="stat-row">
-        <span class="stat-row-label">Vacant</span>
-        <span class="stat-row-val green" id="vacantVal">—</span>
+      <div class="receipt" id="receipt">
+        <div class="receipt-title">✓ Exit Processed</div>
+        <div class="receipt-row"><span class="receipt-label">Vehicle</span><span class="receipt-val" id="rVehicle">—</span></div>
+        <div class="receipt-row"><span class="receipt-label">Slot Released</span><span class="receipt-val green" id="rSlot">—</span></div>
+        <div class="receipt-row"><span class="receipt-label">Exit Time</span><span class="receipt-val" id="rExit">—</span></div>
+        <div class="receipt-row"><span class="receipt-label">Status</span><span class="receipt-val green">Slot Released ✓</span></div>
+        <div class="receipt-row"><span class="receipt-label">Thank You</span><span class="receipt-val gold">Drive Safe!</span></div>
       </div>
-      <div class="stat-row">
-        <span class="stat-row-label">Occupied</span>
-        <span class="stat-row-val red" id="occupiedVal">—</span>
-      </div>
-      <div class="mini-slots" id="miniSlots"></div>
-    </div>
-
-    <div class="booking-panel">
-      <h2>Confirm Booking</h2>
-      <div class="form-group">
-        <label>Vehicle Number</label>
-        <input type="text" id="vehicleNumber" placeholder="e.g. AP 09 AB 1234" autocomplete="off">
-      </div>
-      <div class="form-group">
-        <label>Selected Slot</label>
-        <div class="selected-slot-display" id="selectedSlotDisplay">Click a slot on the left →</div>
-      </div>
-      <div class="form-group">
-        <label>Entry Time</label>
-        <input type="time" id="entryTime">
-      </div>
-      <button class="submit-btn" id="confirmBtn" onclick="confirmBooking()" disabled>Confirm Booking</button>
-      <div class="alert-msg alert-success" id="successMsg"></div>
-      <div class="alert-msg alert-error" id="errorMsg"></div>
-    </div>
-
-    <div class="booked-section" id="bookedSection" style="display:none;">
-      <h2>Recent Bookings</h2>
-      <div id="bookedList"></div>
     </div>
   </main>
 
   <script>
     const API = 'http://localhost:5000';
-    const gate = new URLSearchParams(window.location.search).get('gate') || 'Gate 1';
-    document.getElementById('gateBadge').textContent = gate;
 
-    let selectedSlot = null;
-    let slots = [];
-    let vacantCount = 10;
-    let occupiedCount = 0;
-
-    // Set current time default
     const now = new Date();
-    document.getElementById('entryTime').value = now.toTimeString().slice(0,5);
+  
+    document.getElementById('exitTime').value = now.toTimeString().slice(0,5);
 
-    async function loadSlots() {
-      try {
-        const res = await fetch(`${API}/api/slots`);
-        slots = await res.json();
-        renderSlots();
-        const v = slots.filter(s => !s.occupied).length;
-        const o = slots.filter(s => s.occupied).length;
-        document.getElementById('vacantVal').textContent = v;
-        document.getElementById('occupiedVal').textContent = o;
-        vacantCount = v;
-        occupiedCount = o;
-      } catch {
-        // Fallback random
-        slots = Array.from({ length: 10 }, (_, i) => ({ id: i + 1, occupied: Math.random() < 0.4 }));
-        renderSlots();
-        vacantCount = slots.filter(s => !s.occupied).length;
-        occupiedCount = slots.filter(s => s.occupied).length;
-        document.getElementById('vacantVal').textContent = vacantCount;
-        document.getElementById('occupiedVal').textContent = occupiedCount;
-      }
-    }
+    /* ── localStorage helpers ── */
+    function lsGetVehicles(){ try{ return JSON.parse(localStorage.getItem('px_vehicles')||'[]'); }catch{ return []; } }
+    function lsSaveVehicles(v){ localStorage.setItem('px_vehicles', JSON.stringify(v)); }
+    function lsGetSlots(){     try{ return JSON.parse(localStorage.getItem('px_slots')||'[]');   }catch{ return []; } }
+    function lsSaveSlots(s){   localStorage.setItem('px_slots', JSON.stringify(s)); }
 
-    function renderSlots() {
-      const container = document.getElementById('miniSlots');
-      container.innerHTML = '';
-      slots.forEach(s => {
-        const el = document.createElement('div');
-        const isOcc = s.occupied;
-        el.className = `mini-slot ${selectedSlot === s.id ? 'selected' : (isOcc ? 'occ' : 'avail')}`;
-        el.textContent = s.id;
-        el.title = `Slot ${s.id}`;
-        if (!isOcc) {
-          el.onclick = () => selectSlot(s.id);
+    async function processExit(){
+      const vehicle  = document.getElementById('vehicleNumber').value.trim().toUpperCase();
+      const exitTime = document.getElementById('exitTime').value;
+      const errEl    = document.getElementById('errMsg');
+      errEl.style.display = 'none';
+
+      if(!vehicle){ errEl.textContent='Please enter a vehicle number.'; errEl.style.display='block'; return; }
+      if(!exitTime){ errEl.textContent='Please enter exit time.';       errEl.style.display='block'; return; }
+
+      let slotId = null;
+      let foundRecord = false;
+
+      /* 1. Update localStorage records */
+      const vehicles = lsGetVehicles();
+      // Find the latest active record for this vehicle
+      let targetIdx = -1;
+      for(let i = vehicles.length-1; i >= 0; i--){
+        if(vehicles[i].vehicleNumber === vehicle && !vehicles[i].exitTime){
+          targetIdx = i; break;
         }
-        container.appendChild(el);
-      });
-    }
+      }
 
-    function selectSlot(id) {
-      selectedSlot = id;
-      document.getElementById('selectedSlotDisplay').textContent = `Slot ${id} — ${gate}`;
-      document.getElementById('confirmBtn').disabled = false;
-      renderSlots();
-    }
+      if(targetIdx !== -1){
+        slotId = vehicles[targetIdx].slotId;
+        vehicles[targetIdx].exitTime = exitTime;
+        lsSaveVehicles(vehicles);
+        foundRecord = true;
 
-    async function confirmBooking() {
-      const vNum = document.getElementById('vehicleNumber').value.trim();
-      const time = document.getElementById('entryTime').value;
+        // Free the slot in localStorage
+        const slots = lsGetSlots();
+        const si = slots.findIndex(s => s.id === slotId);
+        if(si !== -1){ slots[si].occupied = false; slots[si].vehicleNumber = null; }
+        lsSaveSlots(slots);
+      }
 
-      if (!vNum) { showError('Please enter a vehicle number.'); return; }
-      if (!selectedSlot) { showError('Please select a slot.'); return; }
-      if (!time) { showError('Please enter entry time.'); return; }
-
-      const body = {
-        vehicleNumber: vNum.toUpperCase(),
-        gate,
-        slotId: selectedSlot,
-        date: new Date().toLocaleDateString('en-IN'),
-        entryTime: time,
-        exitTime: ''
-      };
-
-      try {
-        const res = await fetch(`${API}/api/add-vehicle`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body)
+      /* 2. Try backend too */
+      try{
+        const res = await fetch(`${API}/api/exit-vehicle`,{
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ vehicleNumber: vehicle, exitTime })
         });
         const data = await res.json();
+        if(data.success){ foundRecord = true; slotId = data.data?.slotId || slotId; }
+      } catch { /* offline — localStorage already handled */ }
 
-        showSuccess(`✓ Slot ${selectedSlot} booked for ${vNum} at ${gate}`);
-
-        // Add to booked list
-        addBookingToList(vNum, selectedSlot, time, gate);
-
-        // Mark slot as occupied locally
-        const s = slots.find(sl => sl.id === selectedSlot);
-        if (s) s.occupied = true;
-        selectedSlot = null;
-        document.getElementById('selectedSlotDisplay').textContent = 'Click a slot on the left →';
-        document.getElementById('confirmBtn').disabled = true;
-        document.getElementById('vehicleNumber').value = '';
-        renderSlots();
-
-        vacantCount--;
-        occupiedCount++;
-        document.getElementById('vacantVal').textContent = vacantCount;
-        document.getElementById('occupiedVal').textContent = occupiedCount;
-
-      } catch {
-        showSuccess(`✓ Slot ${selectedSlot} booked for ${vNum} at ${gate} (offline mode)`);
-        addBookingToList(vNum, selectedSlot, time, gate);
-        const s = slots.find(sl => sl.id === selectedSlot);
-        if (s) s.occupied = true;
-        selectedSlot = null;
-        document.getElementById('selectedSlotDisplay').textContent = 'Click a slot on the left →';
-        document.getElementById('confirmBtn').disabled = true;
-        document.getElementById('vehicleNumber').value = '';
-        renderSlots();
+      if(!foundRecord){
+        errEl.textContent = `No active parking record found for "${vehicle}". Please check the vehicle number.`;
+        errEl.style.display = 'block';
+        return;
       }
+
+      // Show receipt
+      document.getElementById('rVehicle').textContent = vehicle;
+      document.getElementById('rSlot').textContent    = slotId ? `Slot ${slotId}` : 'Released';
+      document.getElementById('rExit').textContent    = exitTime;
+      document.getElementById('receipt').style.display = 'block';
+      document.getElementById('vehicleNumber').value  = '';
     }
 
-    function addBookingToList(vehicle, slot, time, gate) {
-      const section = document.getElementById('bookedSection');
-      section.style.display = 'block';
-      const list = document.getElementById('bookedList');
-      const el = document.createElement('div');
-      el.className = 'booking-record';
-      el.innerHTML = `
-        <div class="booking-record-left">${vehicle} <span class="booking-badge">CONFIRMED</span></div>
-        <div class="booking-record-right">Slot ${slot} &nbsp;|&nbsp; ${gate} &nbsp;|&nbsp; ${time}</div>
-      `;
-      list.prepend(el);
-    }
-
-    function showSuccess(msg) {
-      const el = document.getElementById('successMsg');
-      el.textContent = msg;
-      el.style.display = 'block';
-      document.getElementById('errorMsg').style.display = 'none';
-      setTimeout(() => { el.style.display = 'none'; }, 4000);
-    }
-
-    function showError(msg) {
-      const el = document.getElementById('errorMsg');
-      el.textContent = msg;
-      el.style.display = 'block';
-      document.getElementById('successMsg').style.display = 'none';
-    }
-
-    loadSlots();
+    document.getElementById('vehicleNumber').addEventListener('keydown', e => { if(e.key==='Enter') processExit(); });
   </script>
 </body>
 </html>
