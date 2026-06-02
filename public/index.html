@@ -1,493 +1,422 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ParkXpert — Park Smarter, Not Harder</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <title>ParkXpert — Smart Parking</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --gold: #d4af37;
-      --gold-light: #f0d060;
-      --gold-dark: #a88820;
-      --black: #0a0a0a;
-      --surface: #111111;
-      --surface2: #1a1a1a;
-      --text: #e8e0cc;
-      --muted: #6b6355;
+    :root{
+      --gold:#c9a84c;--gold2:#e8c46a;--gold3:#f5dea0;
+      --bg:#07070f;--s1:#0e0e1a;--s2:#15151f;--s3:#1c1c28;
+      --border:rgba(201,168,76,0.12);--border2:rgba(201,168,76,0.28);
+      --text:#f0ead8;--muted:#6a6458;--dim:#2e2e3a;
+      --green:#3ddc84;--red:#ff6060;--blue:#5b8fff;
     }
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+    html,body{width:100%;height:100%;overflow:hidden;}
+    body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);}
 
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    canvas{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;}
+    .grid{position:fixed;inset:0;pointer-events:none;z-index:1;
+      background-image:linear-gradient(rgba(201,168,76,.025) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(201,168,76,.025) 1px,transparent 1px);
+      background-size:72px 72px;}
+    .vig{position:fixed;inset:0;pointer-events:none;z-index:2;
+      background:radial-gradient(ellipse 70% 70% at 50% 50%,transparent 20%,rgba(7,7,15,.9) 100%);}
+    .corner{position:fixed;width:48px;height:48px;z-index:4;}
+    .tl{top:28px;left:28px;border-top:1px solid var(--border2);border-left:1px solid var(--border2);}
+    .tr{top:28px;right:28px;border-top:1px solid var(--border2);border-right:1px solid var(--border2);}
+    .bl{bottom:28px;left:28px;border-bottom:1px solid var(--border2);border-left:1px solid var(--border2);}
+    .br{bottom:28px;right:28px;border-bottom:1px solid var(--border2);border-right:1px solid var(--border2);}
 
-    body {
-      font-family: 'DM Sans', sans-serif;
-      background: var(--black);
-      color: var(--text);
-      min-height: 100vh;
-      overflow-x: hidden;
+    /* ── STAGE ── */
+    .stage{position:fixed;inset:0;display:flex;flex-direction:column;
+      align-items:center;justify-content:center;z-index:10;}
+
+    .badge{display:inline-flex;align-items:center;gap:8px;padding:5px 16px;
+      border:1px solid var(--border2);border-radius:100px;
+      font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);
+      background:rgba(201,168,76,.05);margin-bottom:24px;
+      animation:slideDown .8s ease both;}
+    .dot{width:5px;height:5px;border-radius:50%;background:var(--green);
+      box-shadow:0 0 8px var(--green);animation:blink 2s ease-in-out infinite;}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+    .logo{font-family:'Bebas Neue',sans-serif;
+      font-size:clamp(80px,14vw,160px);letter-spacing:10px;line-height:.9;
+      background:linear-gradient(135deg,var(--gold) 0%,var(--gold2) 45%,var(--gold3) 60%,var(--gold) 100%);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+      animation:slideDown .9s ease .1s both;}
+    .rule{width:100px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);
+      margin:10px auto 0;animation:slideDown .9s ease .15s both;}
+    .tagline{font-size:11px;letter-spacing:5px;text-transform:uppercase;color:var(--muted);
+      margin-top:10px;margin-bottom:52px;animation:slideDown 1s ease .2s both;}
+
+    .btns{display:flex;gap:12px;animation:slideUp 1s ease .3s both;}
+    .btn{padding:0 44px;height:50px;border-radius:6px;font-family:'Outfit',sans-serif;
+      font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+      cursor:pointer;transition:all .22s;position:relative;overflow:hidden;}
+    .btn::after{content:'';position:absolute;inset:0;
+      background:linear-gradient(90deg,transparent,rgba(255,255,255,.1),transparent);
+      transform:translateX(-100%);transition:transform .5s;}
+    .btn:hover::after{transform:translateX(100%);}
+    .btn-reg{background:var(--gold);color:var(--bg);border:none;}
+    .btn-reg:hover{background:var(--gold2);transform:translateY(-3px);box-shadow:0 14px 36px rgba(201,168,76,.3);}
+    .btn-log{background:transparent;color:var(--gold);border:1px solid var(--border2);}
+    .btn-log:hover{border-color:var(--gold);background:rgba(201,168,76,.06);transform:translateY(-3px);}
+
+    @keyframes slideDown{from{opacity:0;transform:translateY(-18px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes slideUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+
+    /* ── MODAL ── */
+    .overlay{display:none;position:fixed;inset:0;z-index:200;
+      justify-content:center;align-items:center;padding:16px;}
+    .overlay.open{display:flex;}
+    .ob{position:fixed;inset:0;background:rgba(7,7,15,.88);backdrop-filter:blur(16px);}
+
+    .modal{position:relative;z-index:1;width:100%;max-width:430px;
+      background:var(--s1);border:1px solid var(--border2);border-radius:16px;
+      overflow:hidden;max-height:95vh;overflow-y:auto;
+      animation:popIn .3s cubic-bezier(.34,1.45,.64,1) both;}
+    .modal::-webkit-scrollbar{width:4px;}
+    .modal::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
+    @keyframes popIn{from{transform:scale(.88) translateY(24px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+
+    .mbar{height:3px;background:linear-gradient(90deg,transparent,var(--gold),transparent);}
+    .minner{padding:28px;}
+
+    .mclose{position:absolute;top:14px;right:14px;width:28px;height:28px;border-radius:50%;
+      background:var(--s3);border:1px solid var(--border);color:var(--muted);
+      font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+      transition:all .2s;z-index:2;}
+    .mclose:hover{border-color:var(--red);color:var(--red);}
+
+    /* main tabs */
+    .tabs{display:flex;gap:4px;background:var(--s2);border:1px solid var(--border);
+      border-radius:10px;padding:4px;margin-bottom:20px;}
+    .tab{flex:1;padding:9px;background:transparent;border:none;border-radius:7px;
+      font-family:'Outfit',sans-serif;font-size:11px;font-weight:700;
+      letter-spacing:2px;text-transform:uppercase;color:var(--muted);cursor:pointer;transition:all .2s;}
+    .tab.on{background:var(--gold);color:var(--bg);}
+
+    /* role selector */
+    .roles{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
+    .role{padding:11px 8px;text-align:center;background:var(--s2);
+      border:1.5px solid var(--border);border-radius:10px;cursor:pointer;transition:all .2s;}
+    .role:hover{border-color:var(--border2);}
+    .role.on{border-color:var(--gold);background:rgba(201,168,76,.07);}
+    .ri{font-size:20px;margin-bottom:3px;}
+    .rn{font-size:12px;font-weight:700;color:var(--text);}
+    .rs{font-size:10px;color:var(--muted);margin-top:1px;}
+
+    /* form */
+    .fg{margin-bottom:11px;}
+    .fg label{display:block;font-size:10px;letter-spacing:2px;text-transform:uppercase;
+      color:var(--muted);margin-bottom:5px;}
+    .fg input{width:100%;padding:10px 13px;background:var(--s2);
+      border:1px solid var(--border);border-radius:8px;
+      color:var(--text);font-family:'Outfit',sans-serif;font-size:14px;
+      outline:none;transition:border-color .2s;}
+    .fg input:focus{border-color:var(--gold);}
+    .fg input::placeholder{color:var(--dim);}
+
+    /* two-col row for name + phone */
+    .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+
+    .akey{display:none;}
+
+    /* login method toggle */
+    .method-toggle{
+      display:flex;gap:0;background:var(--s2);border:1px solid var(--border);
+      border-radius:8px;padding:3px;margin-bottom:14px;
     }
+    .mtab{flex:1;padding:7px;background:transparent;border:none;border-radius:6px;
+      font-family:'Outfit',sans-serif;font-size:11px;font-weight:700;
+      letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);cursor:pointer;transition:all .2s;
+      display:flex;align-items:center;justify-content:center;gap:6px;}
+    .mtab.on{background:var(--s3);color:var(--text);border:1px solid var(--border2);}
 
-    /* Noise texture overlay */
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-      pointer-events: none;
-      z-index: 0;
-    }
+    /* remember */
+    .remember{display:flex;align-items:center;gap:8px;margin-bottom:11px;cursor:pointer;width:fit-content;}
+    .remember input{width:auto;accent-color:var(--gold);}
+    .remember span{font-size:12px;color:var(--muted);}
 
-    /* ── NAV ── */
-    nav {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      z-index: 100;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 20px 60px;
-      background: linear-gradient(to bottom, rgba(10,10,10,0.95), transparent);
-    }
+    .sbtn{width:100%;padding:12px;background:var(--gold);color:var(--bg);border:none;border-radius:8px;
+      font-family:'Outfit',sans-serif;font-size:12px;font-weight:800;
+      letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all .2s;margin-top:4px;}
+    .sbtn:hover{background:var(--gold2);box-shadow:0 8px 28px rgba(201,168,76,.28);}
 
-    .nav-logo {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 28px;
-      letter-spacing: 3px;
-      color: var(--gold);
-      text-decoration: none;
-    }
+    .alert{padding:9px 13px;border-radius:7px;font-size:13px;margin-top:10px;display:none;}
+    .err{background:rgba(255,96,96,.08);border:1px solid rgba(255,96,96,.25);color:var(--red);}
+    .ok{background:rgba(61,220,132,.08);border:1px solid rgba(61,220,132,.25);color:var(--green);}
 
-    .nav-logo span { color: var(--text); }
+    .mfoot{text-align:center;margin-top:12px;font-size:12px;color:var(--muted);}
+    .mfoot a{color:var(--gold);cursor:pointer;}
+    .mfoot a:hover{text-decoration:underline;}
 
-    .nav-actions { display: flex; gap: 12px; }
-
-    .nav-btn {
-      padding: 9px 24px;
-      border-radius: 4px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s;
-      letter-spacing: 0.5px;
-    }
-
-    .nav-btn.outline {
-      background: transparent;
-      border: 1px solid var(--gold);
-      color: var(--gold);
-    }
-
-    .nav-btn.outline:hover { background: var(--gold); color: var(--black); }
-
-    .nav-btn.solid {
-      background: var(--gold);
-      border: 1px solid var(--gold);
-      color: var(--black);
-      font-weight: 600;
-    }
-
-    .nav-btn.solid:hover { background: var(--gold-light); }
-
-    /* ── HERO ── */
-    .hero {
-      position: relative;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      padding: 0 60px;
-      overflow: hidden;
-    }
-
-    /* Diagonal gold line */
-    .hero::after {
-      content: '';
-      position: absolute;
-      right: -100px;
-      top: 0;
-      width: 600px;
-      height: 100%;
-      background: linear-gradient(135deg, transparent 40%, rgba(212,175,55,0.04) 40%);
-      pointer-events: none;
-    }
-
-    /* Big P watermark */
-    .hero-watermark {
-      position: absolute;
-      right: -20px;
-      top: 50%;
-      transform: translateY(-50%);
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 500px;
-      line-height: 1;
-      color: rgba(212,175,55,0.04);
-      user-select: none;
-      pointer-events: none;
-    }
-
-    .hero-tag {
-      display: inline-block;
-      padding: 6px 14px;
-      border: 1px solid var(--muted);
-      border-radius: 2px;
-      font-size: 11px;
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 28px;
-      width: fit-content;
-    }
-
-    .hero-title {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: clamp(72px, 10vw, 140px);
-      line-height: 0.9;
-      letter-spacing: 2px;
-      margin-bottom: 28px;
-    }
-
-    .hero-title .line1 { display: block; color: var(--text); }
-    .hero-title .line2 { display: block; color: var(--gold); }
-
-    .hero-sub {
-      font-size: 16px;
-      color: var(--muted);
-      max-width: 400px;
-      line-height: 1.7;
-      margin-bottom: 48px;
-    }
-
-    .hero-cta {
-      display: flex;
-      gap: 16px;
-      align-items: center;
-    }
-
-    .cta-btn {
-      padding: 14px 36px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 15px;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-      cursor: pointer;
-      border-radius: 4px;
-      transition: all 0.25s;
-      text-decoration: none;
-    }
-
-    .cta-primary {
-      background: var(--gold);
-      color: var(--black);
-      border: none;
-    }
-
-    .cta-primary:hover {
-      background: var(--gold-light);
-      transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(212,175,55,0.3);
-    }
-
-    .cta-ghost {
-      background: transparent;
-      color: var(--text);
-      border: 1px solid #333;
-    }
-
-    .cta-ghost:hover { border-color: var(--gold); color: var(--gold); }
-
-    /* ── STATS BAR ── */
-    .stats-bar {
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      border-top: 1px solid #1e1e1e;
-      background: rgba(17,17,17,0.8);
-      backdrop-filter: blur(10px);
-    }
-
-    .stat-item {
-      padding: 24px 40px;
-      border-right: 1px solid #1e1e1e;
-    }
-
-    .stat-item:last-child { border-right: none; }
-
-    .stat-num {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 42px;
-      color: var(--gold);
-      line-height: 1;
-    }
-
-    .stat-label {
-      font-size: 12px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-top: 4px;
-    }
-
-    /* ── OVERLAY MODAL ── */
-    .overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.85);
-      backdrop-filter: blur(8px);
-      z-index: 200;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .overlay.active { display: flex; }
-
-    .modal {
-      background: var(--surface);
-      border: 1px solid #2a2a2a;
-      border-top: 3px solid var(--gold);
-      padding: 44px;
-      width: 420px;
-      position: relative;
-      animation: slideUp 0.3s ease;
-    }
-
-    @keyframes slideUp {
-      from { transform: translateY(30px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
-    }
-
-    .modal-close {
-      position: absolute;
-      top: 16px; right: 20px;
-      background: none;
-      border: none;
-      color: var(--muted);
-      font-size: 22px;
-      cursor: pointer;
-      line-height: 1;
-    }
-
-    .modal-close:hover { color: var(--text); }
-
-    .modal-tag {
-      font-size: 10px;
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      color: var(--gold);
-      margin-bottom: 8px;
-    }
-
-    .modal h2 {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 36px;
-      letter-spacing: 2px;
-      color: var(--text);
-      margin-bottom: 28px;
-    }
-
-    .form-group { margin-bottom: 18px; }
-
-    .form-group label {
-      display: block;
-      font-size: 11px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 8px;
-    }
-
-    .form-group input {
-      width: 100%;
-      padding: 12px 16px;
-      background: var(--surface2);
-      border: 1px solid #2a2a2a;
-      border-radius: 4px;
-      color: var(--text);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 15px;
-      transition: border-color 0.2s;
-      outline: none;
-    }
-
-    .form-group input:focus { border-color: var(--gold); }
-
-    .form-group input::placeholder { color: #444; }
-
-    .submit-btn {
-      width: 100%;
-      padding: 14px;
-      background: var(--gold);
-      color: var(--black);
-      border: none;
-      border-radius: 4px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 15px;
-      font-weight: 700;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      cursor: pointer;
-      margin-top: 8px;
-      transition: all 0.2s;
-    }
-
-    .submit-btn:hover {
-      background: var(--gold-light);
-      box-shadow: 0 4px 20px rgba(212,175,55,0.3);
-    }
-
-    .modal-error {
-      background: rgba(220,50,50,0.1);
-      border: 1px solid rgba(220,50,50,0.3);
-      color: #ff6b6b;
-      padding: 10px 14px;
-      border-radius: 4px;
-      font-size: 13px;
-      margin-top: 12px;
-      display: none;
-    }
-
-    .credentials-hint {
-      text-align: center;
-      margin-top: 16px;
-      font-size: 12px;
-      color: var(--muted);
-    }
+    /* hint text below identifier field */
+    .field-hint{font-size:10px;color:var(--muted);margin-top:4px;padding-left:2px;}
   </style>
 </head>
 <body>
+<canvas id="cv"></canvas>
+<div class="grid"></div>
+<div class="vig"></div>
+<div class="corner tl"></div><div class="corner tr"></div>
+<div class="corner bl"></div><div class="corner br"></div>
 
-  <nav>
-    <a class="nav-logo" href="#">PARK<span>XPERT</span></a>
-    <div class="nav-actions">
-      <button class="nav-btn outline" onclick="openModal('adminModal')">Admin</button>
-      <button class="nav-btn solid" onclick="openModal('userModal')">Login</button>
-    </div>
-  </nav>
+<div class="stage">
+  <div class="badge"><span class="dot"></span>Smart Parking System</div>
+  <div class="logo">PARKXPERT</div>
+  <div class="rule"></div>
+  <div class="tagline">Park Smarter, Not Harder</div>
+  <div class="btns">
+    <button class="btn btn-reg" onclick="open_('register')">Register</button>
+    <button class="btn btn-log" onclick="open_('login')">Login</button>
+  </div>
+</div>
 
-  <section class="hero">
-    <div class="hero-watermark">P</div>
-    <div class="hero-tag">Smart Parking System v2.0</div>
-    <h1 class="hero-title">
-      <span class="line1">PARK</span>
-      <span class="line2">XPERT</span>
-    </h1>
-    <p class="hero-sub">Real-time slot management. Zero hassle. Find, book, and exit your parking space in seconds.</p>
-    <div class="hero-cta">
-      <button class="cta-btn cta-primary" onclick="openModal('userModal')">Get Started</button>
-      <button class="cta-btn cta-ghost" onclick="openModal('adminModal')">Admin Portal →</button>
-    </div>
+<!-- MODAL -->
+<div class="overlay" id="ov">
+  <div class="ob" onclick="close_()"></div>
+  <div class="modal">
+    <div class="mbar"></div>
+    <div class="minner">
+      <button class="mclose" onclick="close_()">&times;</button>
 
-    <div class="stats-bar">
-      <div class="stat-item">
-        <div class="stat-num">30</div>
-        <div class="stat-label">Total Slots</div>
+      <!-- main tab bar -->
+      <div class="tabs">
+        <button class="tab on" id="tReg" onclick="switchTab('register')">Register</button>
+        <button class="tab"   id="tLog" onclick="switchTab('login')">Login</button>
       </div>
-      <div class="stat-item">
-        <div class="stat-num" id="liveVacant">—</div>
-        <div class="stat-label">Vacant Now</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-num">3</div>
-        <div class="stat-label">Active Gates</div>
-      </div>
-    </div>
-  </section>
 
-  <!-- User Login Modal -->
-  <div class="overlay" id="userModal">
-    <div class="modal">
-      <button class="modal-close" onclick="closeModal('userModal')">&times;</button>
-      <div class="modal-tag">User Access</div>
-      <h2>Welcome Back</h2>
-      <div class="form-group">
-        <label>Username</label>
-        <input type="text" id="uUsername" placeholder="Enter username" autocomplete="off">
+      <!-- ══ REGISTER PANEL ══ -->
+      <div id="pReg">
+        <!-- role -->
+        <div class="roles">
+          <div class="role on" id="rUser" onclick="pickRole('user')">
+            <div class="ri">👤</div><div class="rn">User</div><div class="rs">Book slots</div>
+          </div>
+          <div class="role" id="rAdmin" onclick="pickRole('admin')">
+            <div class="ri">🔐</div><div class="rn">Admin</div><div class="rs">Full access</div>
+          </div>
+        </div>
+
+        <div class="fg">
+          <label>Full Name</label>
+          <input id="rName" type="text" placeholder="Your full name" autocomplete="name">
+        </div>
+        <div class="fg">
+          <label>Phone Number</label>
+          <input id="rPhone" type="tel" placeholder="10-digit mobile number" maxlength="10" autocomplete="tel">
+        </div>
+        <div class="fg">
+          <label>Email Address</label>
+          <input id="rEmail" type="email" placeholder="you@email.com" autocomplete="email">
+        </div>
+        <div class="fg">
+          <label>Password</label>
+          <input id="rPass" type="password" placeholder="Min 4 characters" autocomplete="new-password">
+        </div>
+        <div class="fg akey" id="akFg">
+          <label>Admin Secret Key</label>
+          <input id="rKey" type="password" placeholder="Enter admin key">
+        </div>
+
+        <label class="remember">
+          <input type="checkbox" id="rRemember" checked>
+          <span>Keep me logged in</span>
+        </label>
+
+        <button class="sbtn" onclick="doReg()">Create Account</button>
+        <div class="alert err" id="rErr"></div>
+        <div class="alert ok"  id="rOk"></div>
+        <div class="mfoot">Already have an account? <a onclick="switchTab('login')">Login →</a></div>
       </div>
-      <div class="form-group">
-        <label>Password</label>
-        <input type="password" id="uPassword" placeholder="Enter password">
+
+      <!-- ══ LOGIN PANEL ══ -->
+      <div id="pLog" style="display:none">
+
+        <!-- method toggle: email / phone -->
+        <div class="method-toggle">
+          <button class="mtab on" id="mEmail" onclick="switchMethod('email')">
+            ✉ Email
+          </button>
+          <button class="mtab" id="mPhone" onclick="switchMethod('phone')">
+            📱 Phone Number
+          </button>
+        </div>
+
+        <!-- Email login -->
+        <div id="loginByEmail">
+          <div class="fg">
+            <label>Email Address</label>
+            <input id="lEmail" type="email" placeholder="you@email.com" autocomplete="email">
+          </div>
+        </div>
+
+        <!-- Phone login -->
+        <div id="loginByPhone" style="display:none">
+          <div class="fg">
+            <label>Phone Number</label>
+            <input id="lPhone" type="tel" placeholder="10-digit number" maxlength="10" autocomplete="tel">
+            <div class="field-hint">Use the phone number you registered with</div>
+          </div>
+        </div>
+
+        <div class="fg">
+          <label>Password</label>
+          <input id="lPass" type="password" placeholder="Your password">
+        </div>
+
+        <label class="remember">
+          <input type="checkbox" id="lRemember" checked>
+          <span>Keep me logged in</span>
+        </label>
+
+        <button class="sbtn" onclick="doLog()">Sign In</button>
+        <div class="alert err" id="lErr"></div>
+        <div class="mfoot">No account? <a onclick="switchTab('register')">Register →</a></div>
       </div>
-      <button class="submit-btn" onclick="userLogin()">Sign In</button>
-      <div class="modal-error" id="userError">Invalid username or password.</div>
-      <p class="credentials-hint">Demo: user / 1234</p>
+
     </div>
   </div>
+</div>
 
-  <!-- Admin Login Modal -->
-  <div class="overlay" id="adminModal">
-    <div class="modal">
-      <button class="modal-close" onclick="closeModal('adminModal')">&times;</button>
-      <div class="modal-tag">Admin Access</div>
-      <h2>Admin Portal</h2>
-      <div class="form-group">
-        <label>Admin Username</label>
-        <input type="text" id="aUsername" placeholder="Enter admin username" autocomplete="off">
-      </div>
-      <div class="form-group">
-        <label>Admin Password</label>
-        <input type="password" id="aPassword" placeholder="Enter admin password">
-      </div>
-      <button class="submit-btn" onclick="adminLogin()">Access Dashboard</button>
-      <div class="modal-error" id="adminError">Invalid admin credentials.</div>
-      <p class="credentials-hint">Demo: admin / 9876</p>
-    </div>
-  </div>
-
-  <script>
-    const API = 'http://localhost:5000';
-
-    function openModal(id) {
-      document.getElementById(id).classList.add('active');
+<script src="px_state.js"></script>
+<script>
+/* ── Particles ── */
+(()=>{
+  const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+  let W,H,pts=[];
+  function resize(){W=cv.width=innerWidth;H=cv.height=innerHeight;}
+  function init(){pts=Array.from({length:80},()=>({
+    x:Math.random()*W,y:Math.random()*H,
+    vx:(Math.random()-.5)*.25,vy:(Math.random()-.5)*.25,
+    r:Math.random()*1.2+.3,a:Math.random()*.6+.1
+  }));}
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++){
+      const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.sqrt(dx*dx+dy*dy);
+      if(d<130){ctx.strokeStyle=`rgba(201,168,76,${(1-d/130)*.07})`;ctx.lineWidth=.5;
+        ctx.beginPath();ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(pts[j].x,pts[j].y);ctx.stroke();}
     }
-
-    function closeModal(id) {
-      document.getElementById(id).classList.remove('active');
-    }
-
-    // Close on backdrop click
-    document.querySelectorAll('.overlay').forEach(o => {
-      o.addEventListener('click', e => { if (e.target === o) o.classList.remove('active'); });
+    pts.forEach(p=>{
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(201,168,76,${p.a*.4})`;ctx.fill();
+      p.x+=p.vx;p.y+=p.vy;
+      if(p.x<0||p.x>W)p.vx*=-1;if(p.y<0||p.y>H)p.vy*=-1;
     });
+    requestAnimationFrame(draw);
+  }
+  window.addEventListener('resize',()=>{resize();init();});resize();init();draw();
+})();
 
-    function userLogin() {
-      const u = document.getElementById('uUsername').value;
-      const p = document.getElementById('uPassword').value;
-      if (u === 'user' && p === '1234') {
-        window.location.href = 'dashboard.html';
-      } else {
-        document.getElementById('userError').style.display = 'block';
-      }
-    }
+/* ── Auth state ── */
+const ADMIN_KEY='PARK2024';
+let role='user', loginMethod='email';
 
-    function adminLogin() {
-      const u = document.getElementById('aUsername').value;
-      const p = document.getElementById('aPassword').value;
-      if (u === 'admin' && p === '9876') {
-        window.location.href = 'admindashboard.html';
-      } else {
-        document.getElementById('adminError').style.display = 'block';
-      }
-    }
+// redirect if already logged in
+const already=PX.getCurrentUser();
+if(already) window.location.href=already.role==='admin'?'admin.html':'dashboard.html';
 
-    // Enter key support
-    document.getElementById('uPassword').addEventListener('keydown', e => { if (e.key === 'Enter') userLogin(); });
-    document.getElementById('aPassword').addEventListener('keydown', e => { if (e.key === 'Enter') adminLogin(); });
+/* ── Modal ── */
+function open_(tab){ document.getElementById('ov').classList.add('open'); switchTab(tab); }
+function close_(){ document.getElementById('ov').classList.remove('open'); clearA(); }
 
-    // Fetch live stats
-    async function loadStats() {
-      try {
-        const res = await fetch(`${API}/api/stats`);
-        const data = await res.json();
-        document.getElementById('liveVacant').textContent = data.vacant;
-      } catch {
-        document.getElementById('liveVacant').textContent = '—';
-      }
-    }
+/* ── Main tab switch ── */
+function switchTab(t){
+  const r=t==='register';
+  document.getElementById('tReg').className='tab'+(r?' on':'');
+  document.getElementById('tLog').className='tab'+(!r?' on':'');
+  document.getElementById('pReg').style.display=r?'block':'none';
+  document.getElementById('pLog').style.display=r?'none':'block';
+  clearA();
+}
 
-    loadStats();
-  </script>
+/* ── Role picker ── */
+function pickRole(r){
+  role=r;
+  document.getElementById('rUser').className='role'+(r==='user'?' on':'');
+  document.getElementById('rAdmin').className='role'+(r==='admin'?' on':'');
+  document.getElementById('akFg').style.display=r==='admin'?'block':'none';
+}
+
+/* ── Login method toggle ── */
+function switchMethod(m){
+  loginMethod=m;
+  document.getElementById('mEmail').className='mtab'+(m==='email'?' on':'');
+  document.getElementById('mPhone').className='mtab'+(m==='phone'?' on':'');
+  document.getElementById('loginByEmail').style.display=m==='email'?'block':'none';
+  document.getElementById('loginByPhone').style.display=m==='phone'?'block':'none';
+  clearA();
+  // focus the active input
+  setTimeout(()=>{
+    const el=m==='email'?document.getElementById('lEmail'):document.getElementById('lPhone');
+    el.focus();
+  },50);
+}
+
+/* ── Alerts ── */
+function clearA(){['rErr','rOk','lErr'].forEach(id=>{const e=document.getElementById(id);e.style.display='none';e.textContent='';});}
+function showA(id,msg){const e=document.getElementById(id);e.textContent=msg;e.style.display='block';}
+
+/* ── Register ── */
+function doReg(){
+  clearA();
+  const name  = document.getElementById('rName').value.trim();
+  const phone = document.getElementById('rPhone').value.trim();
+  const email = document.getElementById('rEmail').value.trim();
+  const pass  = document.getElementById('rPass').value;
+  const key   = document.getElementById('rKey').value;
+  const rem   = document.getElementById('rRemember').checked;
+
+  if(!name)          { showA('rErr','Please enter your full name.');       return; }
+  if(!phone)         { showA('rErr','Please enter your phone number.');    return; }
+  if(!/^\d{10}$/.test(phone)) { showA('rErr','Phone must be exactly 10 digits.'); return; }
+  if(!email)         { showA('rErr','Please enter your email address.');   return; }
+  if(!pass)          { showA('rErr','Please enter a password.');           return; }
+  if(pass.length<4)  { showA('rErr','Password must be at least 4 characters.'); return; }
+  if(role==='admin'&&key!==ADMIN_KEY){ showA('rErr','Invalid admin secret key.'); return; }
+
+  const res=PX.registerUser(name,email,phone,pass,role);
+  if(!res.success){ showA('rErr',res.message); return; }
+  PX.loginUser(email,pass,rem);
+  showA('rOk',`✓ Welcome, ${res.user.name}! Redirecting…`);
+  setTimeout(()=>window.location.href=res.user.role==='admin'?'admin.html':'dashboard.html',1100);
+}
+
+/* ── Login ── */
+function doLog(){
+  clearA();
+  const identifier = loginMethod==='email'
+    ? document.getElementById('lEmail').value.trim()
+    : document.getElementById('lPhone').value.trim();
+  const pass = document.getElementById('lPass').value;
+  const rem  = document.getElementById('lRemember').checked;
+
+  if(!identifier){
+    showA('lErr', loginMethod==='email'
+      ? 'Please enter your email address.'
+      : 'Please enter your phone number.');
+    return;
+  }
+  if(loginMethod==='phone' && !/^\d{10}$/.test(identifier)){
+    showA('lErr','Phone must be exactly 10 digits.'); return;
+  }
+  if(!pass){ showA('lErr','Please enter your password.'); return; }
+
+  const res=PX.loginUser(identifier, pass, rem);
+  if(!res.success){ showA('lErr',res.message); return; }
+  window.location.href=res.user.role==='admin'?'admin.html':'dashboard.html';
+}
+
+/* Enter key on password fields */
+document.getElementById('lPass').addEventListener('keydown', e=>{ if(e.key==='Enter') doLog(); });
+document.getElementById('rPass').addEventListener('keydown', e=>{ if(e.key==='Enter') doReg(); });
+</script>
 </body>
 </html>
