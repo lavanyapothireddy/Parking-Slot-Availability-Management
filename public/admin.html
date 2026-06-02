@@ -1,0 +1,388 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — ParkXpert</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --gold:#c9a84c;--gold2:#e8c46a;
+      --bg:#07070f;--s1:#0e0e1a;--s2:#15151f;--s3:#1c1c28;
+      --border:rgba(201,168,76,0.1);--border2:rgba(201,168,76,0.25);
+      --text:#f0ead8;--muted:#6a6458;--dim:#2e2e3a;
+      --green:#3ddc84;--red:#ff6060;--blue:#5b8fff;
+    }
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+    /* TOPBAR */
+    .topbar{
+      display:flex;justify-content:space-between;align-items:center;
+      padding:0 40px;height:64px;
+      background:var(--s1);border-bottom:1px solid var(--border2);
+      position:sticky;top:0;z-index:100;
+    }
+    .tb-left{display:flex;align-items:center;gap:14px;}
+    .logo{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:4px;color:var(--gold);}
+    .admin-tag{
+      padding:3px 10px;border-radius:4px;
+      background:rgba(201,168,76,.1);border:1px solid var(--border2);
+      font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gold);
+    }
+    .tb-right{display:flex;align-items:center;gap:10px;}
+    .clock{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;}
+    .tbtn{padding:7px 18px;border-radius:6px;font-family:'Outfit',sans-serif;font-size:12px;font-weight:600;letter-spacing:1px;cursor:pointer;transition:all .2s;}
+    .tbtn-ghost{background:transparent;border:1px solid var(--border2);color:var(--muted);}
+    .tbtn-ghost:hover{border-color:var(--gold);color:var(--gold);}
+    .tbtn-red{background:rgba(255,96,96,.08);border:1px solid rgba(255,96,96,.25);color:var(--red);}
+    .tbtn-red:hover{background:var(--red);color:#fff;border-color:var(--red);}
+
+    /* LAYOUT */
+    main{padding:36px 40px;max-width:1400px;margin:0 auto;}
+
+    /* HEADER */
+    .page-hd{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:28px;}
+    .page-hd h1{font-family:'Bebas Neue',sans-serif;font-size:44px;letter-spacing:2px;line-height:1;}
+    .page-hd p{font-size:13px;color:var(--muted);margin-top:4px;}
+    .last-upd{font-size:12px;color:var(--muted);}
+
+    /* TABS */
+    .nav-tabs{display:flex;gap:4px;background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:4px;width:fit-content;margin-bottom:28px;}
+    .ntab{padding:8px 20px;background:transparent;border:none;border-radius:7px;font-family:'Outfit',sans-serif;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);cursor:pointer;transition:all .2s;}
+    .ntab.on{background:var(--gold);color:var(--bg);}
+
+    /* STATS */
+    .stats-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:32px;}
+    .sc{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:20px;position:relative;overflow:hidden;}
+    .sc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+    .sc.c1::before{background:var(--gold);}
+    .sc.c2::before{background:var(--green);}
+    .sc.c3::before{background:var(--red);}
+    .sc.c4::before{background:var(--blue);}
+    .sc.c5::before{background:#a855f7;}
+    .sc-lbl{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+    .sc-num{font-family:'Bebas Neue',sans-serif;font-size:42px;line-height:1;}
+    .sc.c1 .sc-num{color:var(--gold);}
+    .sc.c2 .sc-num{color:var(--green);}
+    .sc.c3 .sc-num{color:var(--red);}
+    .sc.c4 .sc-num{color:var(--blue);}
+    .sc.c5 .sc-num{color:#a855f7;}
+
+    /* TABLE */
+    .table-wrap{background:var(--s1);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+    .table-toolbar{
+      display:flex;align-items:center;gap:12px;
+      padding:16px 20px;border-bottom:1px solid var(--border);
+    }
+    .search{
+      flex:1;padding:9px 14px;background:var(--s2);
+      border:1px solid var(--border);border-radius:8px;
+      color:var(--text);font-family:'Outfit',sans-serif;font-size:13px;
+      outline:none;transition:border-color .2s;
+    }
+    .search:focus{border-color:var(--gold);}
+    .search::placeholder{color:var(--dim);}
+    .filter-btns{display:flex;gap:6px;}
+    .fbtn{padding:7px 14px;border-radius:6px;font-family:'Outfit',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .2s;}
+    .fbtn-all{background:var(--s2);border:1px solid var(--border2);color:var(--muted);}
+    .fbtn-all.on{background:var(--gold);color:var(--bg);border-color:var(--gold);}
+    .fbtn-active{background:var(--s2);border:1px solid rgba(61,220,132,.3);color:var(--green);}
+    .fbtn-active.on{background:rgba(61,220,132,.15);border-color:var(--green);}
+    .fbtn-exited{background:var(--s2);border:1px solid var(--border);color:var(--muted);}
+    .fbtn-exited.on{background:var(--s2);border-color:var(--muted);color:var(--text);}
+    .rec-count{font-size:12px;color:var(--muted);margin-left:auto;}
+
+    table{width:100%;border-collapse:collapse;}
+    thead th{
+      padding:12px 16px;text-align:left;
+      font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);
+      background:var(--s2);border-bottom:1px solid var(--border);
+    }
+    tbody tr{border-bottom:1px solid rgba(255,255,255,.03);transition:background .15s;}
+    tbody tr:last-child{border-bottom:none;}
+    tbody tr:hover{background:rgba(201,168,76,.03);}
+    tbody td{padding:12px 16px;font-size:13px;}
+    .td-id{color:var(--muted);font-size:11px;}
+    .td-veh{font-weight:700;color:var(--gold);letter-spacing:1px;}
+    .td-slot{display:inline-block;padding:2px 8px;background:rgba(201,168,76,.08);border:1px solid var(--border2);border-radius:4px;font-size:11px;color:var(--gold);}
+    .badge-active{display:inline-block;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:1px;background:rgba(61,220,132,.1);border:1px solid rgba(61,220,132,.3);color:var(--green);}
+    .badge-exited{display:inline-block;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:1px;background:rgba(100,100,100,.1);border:1px solid rgba(100,100,100,.3);color:var(--muted);}
+    .del-btn{padding:4px 10px;background:transparent;border:1px solid rgba(255,96,96,.25);color:var(--red);border-radius:4px;font-size:11px;cursor:pointer;transition:all .2s;}
+    .del-btn:hover{background:var(--red);color:#fff;}
+    .empty-row td{text-align:center;padding:52px;color:var(--muted);}
+
+    /* SLOT MAP TAB */
+    .slot-map-wrap{
+      background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:28px;
+    }
+    .gate-section{margin-bottom:28px;}
+    .gate-section:last-child{margin-bottom:0;}
+    .gate-hd{
+      display:flex;align-items:center;gap:12px;margin-bottom:14px;
+    }
+    .gate-hd h3{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;}
+    .gate-tag{font-size:11px;color:var(--muted);}
+    .gate-count{margin-left:auto;font-family:'Bebas Neue',sans-serif;font-size:20px;}
+    .gc-green{color:var(--green);}
+    .gc-red{color:var(--red);}
+    .slots-row{display:grid;grid-template-columns:repeat(10,1fr);gap:6px;}
+    .aslot{
+      aspect-ratio:1;border-radius:6px;
+      display:flex;align-items:center;justify-content:center;
+      font-size:10px;font-weight:600;
+    }
+    .aslot.avail{background:rgba(61,220,132,.12);border:1px solid rgba(61,220,132,.35);color:var(--green);}
+    .aslot.occ{background:rgba(255,96,96,.1);border:1px solid rgba(255,96,96,.25);color:var(--red);}
+    .aslot[title]:hover{cursor:default;}
+
+    /* USERS TAB */
+    .user-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;}
+    .user-card{
+      background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:20px;
+      display:flex;align-items:center;gap:14px;
+    }
+    .u-avatar{
+      width:44px;height:44px;border-radius:10px;
+      background:rgba(201,168,76,.1);border:1px solid var(--border2);
+      display:flex;align-items:center;justify-content:center;
+      font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--gold);flex-shrink:0;
+    }
+    .u-name{font-weight:700;font-size:14px;}
+    .u-email{font-size:11px;color:var(--muted);margin-top:2px;}
+    .u-role{
+      margin-top:6px;display:inline-block;padding:2px 8px;border-radius:4px;
+      font-size:10px;font-weight:700;letter-spacing:1px;
+    }
+    .role-user{background:rgba(91,143,255,.1);border:1px solid rgba(91,143,255,.3);color:var(--blue);}
+    .role-admin{background:rgba(201,168,76,.1);border:1px solid var(--border2);color:var(--gold);}
+
+    .danger-zone{margin-top:32px;padding:24px;background:rgba(255,96,96,.04);border:1px solid rgba(255,96,96,.15);border-radius:12px;}
+    .dz-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:var(--red);margin-bottom:14px;}
+    .dz-btn{padding:10px 22px;background:transparent;border:1px solid rgba(255,96,96,.3);color:var(--red);border-radius:8px;font-family:'Outfit',sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .2s;}
+    .dz-btn:hover{background:var(--red);color:#fff;}
+
+    /* hidden panels */
+    .tab-panel{display:none;}
+    .tab-panel.on{display:block;}
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="tb-left">
+    <div class="logo">PARKXPERT</div>
+    <div class="admin-tag">Admin</div>
+  </div>
+  <div class="tb-right">
+    <span class="clock" id="clock"></span>
+    <button class="tbtn tbtn-ghost" onclick="loadAll()">↻ Refresh</button>
+    <button class="tbtn tbtn-red"   onclick="PX.logout();window.location.href='index.html'">Logout</button>
+  </div>
+</div>
+
+<main>
+  <div class="page-hd">
+    <div>
+      <h1>Admin Dashboard</h1>
+      <p>Full system control — vehicles, slots, users</p>
+    </div>
+    <span class="last-upd" id="lastUpd">—</span>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-grid">
+    <div class="sc c1"><div class="sc-lbl">Total Vehicles</div><div class="sc-num" id="stTotal">0</div></div>
+    <div class="sc c2"><div class="sc-lbl">Currently Parked</div><div class="sc-num" id="stActive">0</div></div>
+    <div class="sc c3"><div class="sc-lbl">Exited Today</div><div class="sc-num" id="stExited">0</div></div>
+    <div class="sc c4"><div class="sc-lbl">Vacant Slots</div><div class="sc-num" id="stVacant">—</div></div>
+    <div class="sc c5"><div class="sc-lbl">Registered Users</div><div class="sc-num" id="stUsers">—</div></div>
+  </div>
+
+  <!-- NAV TABS -->
+  <div class="nav-tabs">
+    <button class="ntab on" onclick="showTab('vehicles')">Vehicle Records</button>
+    <button class="ntab"    onclick="showTab('slots')">Slot Map</button>
+    <button class="ntab"    onclick="showTab('users')">Users</button>
+  </div>
+
+  <!-- VEHICLES TAB -->
+  <div class="tab-panel on" id="tab-vehicles">
+    <div class="table-wrap">
+      <div class="table-toolbar">
+        <input class="search" id="searchInput" placeholder="Search vehicle number…" oninput="filterTable()">
+        <div class="filter-btns">
+          <button class="fbtn fbtn-all on" id="fAll"    onclick="setFilter('all')">All</button>
+          <button class="fbtn fbtn-active" id="fActive" onclick="setFilter('active')">Active</button>
+          <button class="fbtn fbtn-exited" id="fExited" onclick="setFilter('exited')">Exited</button>
+        </div>
+        <span class="rec-count" id="recCount">0 records</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th><th>Vehicle No.</th><th>Gate</th><th>Slot</th>
+            <th>Date</th><th>Entry</th><th>Exit</th><th>Status</th><th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="tBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- SLOTS TAB -->
+  <div class="tab-panel" id="tab-slots">
+    <div class="slot-map-wrap" id="slotMapWrap"></div>
+  </div>
+
+  <!-- USERS TAB -->
+  <div class="tab-panel" id="tab-users">
+    <div class="user-grid" id="userGrid"></div>
+    <div class="danger-zone">
+      <div class="dz-title">Danger Zone</div>
+      <button class="dz-btn" onclick="resetAll()">Reset All Slots & Vehicle Records</button>
+    </div>
+  </div>
+</main>
+
+<script src="px_state.js"></script>
+<script>
+  PX.requireAuth('admin');
+
+  // Clock
+  function tick(){ document.getElementById('clock').textContent = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); }
+  setInterval(tick,1000); tick();
+
+  let allVehicles = [];
+  let filterMode  = 'all';
+  let currentTab  = 'vehicles';
+
+  // ── Tab switching ──
+  function showTab(tab) {
+    currentTab = tab;
+    document.querySelectorAll('.tab-panel').forEach(p => p.className = 'tab-panel');
+    document.getElementById(`tab-${tab}`).className = 'tab-panel on';
+    document.querySelectorAll('.ntab').forEach((b,i) => {
+      b.className = 'ntab' + (['vehicles','slots','users'][i] === tab ? ' on' : '');
+    });
+    if (tab === 'slots')  renderSlotMap();
+    if (tab === 'users')  renderUsers();
+  }
+
+  // ── Load all data ──
+  function loadAll() {
+    const stats = PX.getStats();
+    allVehicles = PX.getVehicles();
+
+    document.getElementById('stTotal').textContent  = allVehicles.length;
+    document.getElementById('stActive').textContent = stats.activeVehicles;
+    document.getElementById('stExited').textContent = stats.exitedVehicles;
+    document.getElementById('stVacant').textContent = stats.vacant;
+    document.getElementById('stUsers').textContent  = PX.getUsers().length;
+    document.getElementById('lastUpd').textContent  = 'Updated: ' + new Date().toLocaleTimeString('en-IN');
+
+    renderTable();
+    if (currentTab === 'slots') renderSlotMap();
+    if (currentTab === 'users') renderUsers();
+  }
+
+  // ── Filter ──
+  function setFilter(mode) {
+    filterMode = mode;
+    ['all','active','exited'].forEach(m => {
+      const id = m === 'all' ? 'fAll' : m === 'active' ? 'fActive' : 'fExited';
+      document.getElementById(id).className = document.getElementById(id).className.replace(' on','') + (m === mode ? ' on' : '');
+    });
+    renderTable();
+  }
+
+  function filterTable() { renderTable(); }
+
+  function renderTable() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    let data = allVehicles.filter(v => (v.vehicleNumber||'').toLowerCase().includes(q));
+    if (filterMode === 'active') data = data.filter(v => !v.exitTime);
+    if (filterMode === 'exited') data = data.filter(v =>  v.exitTime);
+
+    document.getElementById('recCount').textContent = `${data.length} record${data.length!==1?'s':''}`;
+    const body = document.getElementById('tBody');
+
+    if (!data.length) {
+      body.innerHTML = '<tr class="empty-row"><td colspan="9">No records found.</td></tr>';
+      return;
+    }
+
+    body.innerHTML = [...data].reverse().map(v => `
+      <tr>
+        <td class="td-id">#${v.id}</td>
+        <td class="td-veh">${v.vehicleNumber||'—'}</td>
+        <td>${v.gate||'—'}</td>
+        <td><span class="td-slot">S${v.slotId||'—'}</span></td>
+        <td>${v.date||'—'}</td>
+        <td>${v.entryTime||'—'}</td>
+        <td>${v.exitTime||'—'}</td>
+        <td><span class="${v.exitTime?'badge-exited':'badge-active'}">${v.exitTime?'EXITED':'ACTIVE'}</span></td>
+        <td><button class="del-btn" onclick="deleteRec(${v.id})">Delete</button></td>
+      </tr>`).join('');
+  }
+
+  function deleteRec(id) {
+    if (!confirm('Delete this record?')) return;
+    PX.deleteVehicle(id);
+    loadAll();
+  }
+
+  // ── Slot map ──
+  function renderSlotMap() {
+    const slots = PX.getSlots();
+    const wrap  = document.getElementById('slotMapWrap');
+    wrap.innerHTML = PX.GATES.map(gate => {
+      const gSlots = slots.filter(s => s.gate === gate);
+      const free   = gSlots.filter(s => !s.occupied).length;
+      return `
+        <div class="gate-section">
+          <div class="gate-hd">
+            <h3>${gate}</h3>
+            <span class="gate-tag">${gate==='Gate 1'?'North':gate==='Gate 2'?'East':'West'} Entrance</span>
+            <span class="gate-count ${free>0?'gc-green':'gc-red'}">${free} free</span>
+          </div>
+          <div class="slots-row">
+            ${gSlots.map(s => `
+              <div class="aslot ${s.occupied?'occ':'avail'}"
+                title="Slot ${s.id} — ${s.occupied?'Occupied by '+s.vehicleNumber:'Available'}">
+                ${s.id}
+              </div>`).join('')}
+          </div>
+        </div>`;
+    }).join('<hr style="border:none;border-top:1px solid var(--border);margin:8px 0;">');
+  }
+
+  // ── Users ──
+  function renderUsers() {
+    const users = PX.getUsers();
+    document.getElementById('userGrid').innerHTML = users.map(u => `
+      <div class="user-card">
+        <div class="u-avatar">${u.name[0].toUpperCase()}</div>
+        <div>
+          <div class="u-name">${u.name}</div>
+          <div class="u-email">${u.email}</div>
+          <span class="u-role ${u.role==='admin'?'role-admin':'role-user'}">${u.role.toUpperCase()}</span>
+        </div>
+      </div>`).join('');
+  }
+
+  // ── Reset ──
+  function resetAll() {
+    if (!confirm('This will delete ALL vehicle records and reset all slots. Cannot be undone!')) return;
+    localStorage.removeItem('px_vehicles');
+    localStorage.removeItem('px_slots');
+    loadAll();
+  }
+
+  loadAll();
+  setInterval(loadAll, 15000);
+</script>
+</body>
+</html>
+  
