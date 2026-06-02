@@ -1,288 +1,244 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Exit Parking — ParkXpert</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --gold: #d4af37;
-      --gold-light: #f0d060;
-      --black: #0a0a0a;
-      --surface: #111111;
-      --surface2: #1a1a1a;
-      --text: #e8e0cc;
-      --muted: #6b6355;
-      --green: #4caf7d;
-      --red: #e05555;
+    :root{
+      --gold:#c9a84c;--gold2:#e8c46a;
+      --bg:#07070f;--s1:#0e0e1a;--s2:#15151f;--s3:#1c1c28;
+      --border:rgba(201,168,76,0.1);--border2:rgba(201,168,76,0.25);
+      --text:#f0ead8;--muted:#6a6458;--dim:#2e2e3a;
+      --green:#3ddc84;--red:#ff6060;
     }
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
 
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    body {
-      font-family: 'DM Sans', sans-serif;
-      background: var(--black);
-      color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
+    .topbar{
+      display:flex;justify-content:space-between;align-items:center;
+      padding:0 40px;height:64px;
+      background:var(--s1);border-bottom:1px solid var(--border2);
     }
-
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 20px 48px;
-      border-bottom: 1px solid #1e1e1e;
-      background: var(--surface);
+    .logo{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:4px;color:var(--gold);}
+    .back-btn{
+      padding:7px 18px;border-radius:6px;background:transparent;
+      border:1px solid var(--border2);color:var(--muted);
+      font-family:'Outfit',sans-serif;font-size:12px;font-weight:600;
+      letter-spacing:1px;cursor:pointer;transition:all .2s;
     }
+    .back-btn:hover{border-color:var(--gold);color:var(--gold);}
 
-    .topbar-logo {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 24px;
-      letter-spacing: 3px;
-      color: var(--gold);
+    main{flex:1;display:grid;grid-template-columns:1fr 1fr;max-width:960px;width:100%;margin:0 auto;padding:52px 40px;gap:40px;align-items:start;}
+
+    /* LEFT — form */
+    .left-col{}
+    .page-tag{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--red);margin-bottom:12px;}
+    h1{font-family:'Bebas Neue',sans-serif;font-size:60px;letter-spacing:2px;line-height:.9;margin-bottom:10px;}
+    .sub{font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:36px;}
+
+    .form-card{
+      background:var(--s1);border:1px solid var(--border);
+      border-top:3px solid var(--red);border-radius:12px;padding:28px;
     }
-
-    .back-btn {
-      padding: 8px 20px;
-      background: transparent;
-      border: 1px solid #2a2a2a;
-      color: var(--muted);
-      border-radius: 4px;
-      cursor: pointer;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 13px;
-      transition: all 0.2s;
+    .fg{margin-bottom:16px;}
+    .fg label{display:block;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:7px;}
+    .fg input{
+      width:100%;padding:12px 14px;background:var(--s2);
+      border:1px solid var(--border);border-radius:8px;
+      color:var(--text);font-family:'Outfit',sans-serif;font-size:15px;
+      outline:none;transition:border-color .2s;
     }
+    .fg input:focus{border-color:var(--red);}
+    .fg input::placeholder{color:var(--dim);}
 
-    .back-btn:hover { border-color: var(--gold); color: var(--gold); }
-
-    main {
-      flex: 1;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 48px;
+    .exit-btn{
+      width:100%;padding:14px;background:var(--red);color:#fff;
+      border:none;border-radius:8px;font-family:'Outfit',sans-serif;
+      font-size:13px;font-weight:800;letter-spacing:2px;text-transform:uppercase;
+      cursor:pointer;transition:all .2s;margin-bottom:10px;
     }
+    .exit-btn:hover{background:#e04444;box-shadow:0 6px 24px rgba(255,96,96,.3);}
 
-    .exit-container {
-      width: 100%;
-      max-width: 520px;
+    .alert{padding:10px 14px;border-radius:8px;font-size:13px;display:none;}
+    .alert-err{background:rgba(255,96,96,.08);border:1px solid rgba(255,96,96,.25);color:var(--red);}
+    .alert-ok{background:rgba(61,220,132,.08);border:1px solid rgba(61,220,132,.25);color:var(--green);}
+
+    /* RIGHT — active vehicles + receipt */
+    .right-col{}
+
+    .panel{
+      background:var(--s1);border:1px solid var(--border);
+      border-radius:12px;overflow:hidden;margin-bottom:20px;
     }
-
-    .page-tag {
-      font-size: 11px;
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      color: var(--red);
-      margin-bottom: 12px;
+    .panel-head{
+      padding:16px 20px;border-bottom:1px solid var(--border);
+      font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;
+      display:flex;justify-content:space-between;align-items:center;
     }
-
-    h1 {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 56px;
-      letter-spacing: 2px;
-      margin-bottom: 8px;
+    .panel-count{
+      font-family:'Outfit',sans-serif;font-size:12px;font-weight:600;
+      color:var(--muted);letter-spacing:0;
     }
-
-    .sub { color: var(--muted); font-size: 15px; margin-bottom: 40px; }
-
-    .form-card {
-      background: var(--surface);
-      border: 1px solid #1e1e1e;
-      border-top: 3px solid var(--red);
-      border-radius: 8px;
-      padding: 36px;
+    .veh-row{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:14px 20px;border-bottom:1px solid var(--border);
+      transition:background .15s;cursor:pointer;
     }
-
-    .form-group { margin-bottom: 20px; }
-
-    .form-group label {
-      display: block;
-      font-size: 11px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 8px;
+    .veh-row:last-child{border-bottom:none;}
+    .veh-row:hover{background:var(--s2);}
+    .veh-left{display:flex;align-items:center;gap:12px;}
+    .veh-icon{
+      width:38px;height:38px;border-radius:8px;
+      background:rgba(201,168,76,.08);border:1px solid var(--border2);
+      display:flex;align-items:center;justify-content:center;font-size:16px;
     }
-
-    .form-group input {
-      width: 100%;
-      padding: 12px 16px;
-      background: var(--surface2);
-      border: 1px solid #2a2a2a;
-      border-radius: 4px;
-      color: var(--text);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 15px;
-      transition: border-color 0.2s;
-      outline: none;
+    .veh-num{font-weight:700;font-size:14px;color:var(--gold);letter-spacing:1px;}
+    .veh-info{font-size:11px;color:var(--muted);margin-top:2px;}
+    .veh-status{
+      font-size:10px;font-weight:700;letter-spacing:1.5px;
+      padding:3px 8px;border-radius:4px;
+      background:rgba(61,220,132,.1);border:1px solid rgba(61,220,132,.3);color:var(--green);
     }
+    .no-vehicles{padding:32px;text-align:center;color:var(--muted);font-size:14px;}
 
-    .form-group input:focus { border-color: var(--red); }
-    .form-group input::placeholder { color: #444; }
-
-    .exit-btn {
-      width: 100%;
-      padding: 14px;
-      background: var(--red);
-      color: white;
-      border: none;
-      border-radius: 4px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 15px;
-      font-weight: 700;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: all 0.2s;
-      margin-bottom: 12px;
+    /* receipt */
+    .receipt{
+      background:var(--s1);border:1px solid rgba(61,220,132,.3);
+      border-radius:12px;padding:24px;display:none;
     }
-
-    .exit-btn:hover {
-      background: #cc3333;
-      box-shadow: 0 4px 20px rgba(224,85,85,0.3);
+    .receipt-head{
+      font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;
+      color:var(--green);margin-bottom:16px;
     }
-
-    /* Receipt */
-    .receipt {
-      display: none;
-      margin-top: 28px;
-      background: var(--surface2);
-      border: 1px solid rgba(76,175,125,0.3);
-      border-radius: 8px;
-      padding: 24px;
-    }
-
-    .receipt-title {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 18px;
-      letter-spacing: 2px;
-      color: var(--green);
-      margin-bottom: 16px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .receipt-row {
-      display: flex;
-      justify-content: space-between;
-      padding: 10px 0;
-      border-bottom: 1px solid #2a2a2a;
-      font-size: 14px;
-    }
-
-    .receipt-row:last-child { border-bottom: none; }
-    .receipt-label { color: var(--muted); }
-    .receipt-val { font-weight: 600; }
-    .receipt-val.gold { color: var(--gold); }
-    .receipt-val.green { color: var(--green); }
-
-    .alert-error {
-      padding: 12px 16px;
-      background: rgba(224,85,85,0.1);
-      border: 1px solid rgba(224,85,85,0.3);
-      color: var(--red);
-      border-radius: 4px;
-      font-size: 14px;
-      margin-top: 12px;
-      display: none;
-    }
+    .r-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:14px;}
+    .r-row:last-child{border-bottom:none;}
+    .r-label{color:var(--muted);}
+    .r-val{font-weight:600;}
+    .r-gold{color:var(--gold);}
+    .r-green{color:var(--green);}
   </style>
 </head>
 <body>
 
-  <div class="topbar">
-    <div class="topbar-logo">PARKXPERT</div>
-    <button class="back-btn" onclick="window.location.href='dashboard.html'">← Dashboard</button>
+<div class="topbar">
+  <div class="logo">PARKXPERT</div>
+  <button class="back-btn" onclick="window.location.href='dashboard.html'">← Back to Dashboard</button>
+</div>
+
+<main>
+  <!-- LEFT -->
+  <div class="left-col">
+    <div class="page-tag">Exit Process</div>
+    <h1>Exit<br>Parking</h1>
+    <p class="sub">Enter your vehicle number to process exit.<br>Your slot will be freed immediately.</p>
+
+    <div class="form-card">
+      <div class="fg">
+        <label>Vehicle Number</label>
+        <input type="text" id="vNum" placeholder="e.g. AP 09 AB 1234" autocomplete="off">
+      </div>
+      <div class="fg">
+        <label>Exit Time</label>
+        <input type="time" id="exitTime">
+      </div>
+      <button class="exit-btn" onclick="processExit()">Process Exit</button>
+      <div class="alert alert-err" id="errMsg"></div>
+    </div>
   </div>
 
-  <main>
-    <div class="exit-container">
-      <div class="page-tag">Exit Process</div>
-      <h1>Exit Parking</h1>
-      <p class="sub">Enter your vehicle details to process your exit and free the slot.</p>
-
-      <div class="form-card">
-        <div class="form-group">
-          <label>Vehicle Number</label>
-          <input type="text" id="vehicleNumber" placeholder="e.g. AP 09 AB 1234">
-        </div>
-        <div class="form-group">
-          <label>Exit Time</label>
-          <input type="time" id="exitTime">
-        </div>
-        <button class="exit-btn" onclick="processExit()">Process Exit</button>
-        <div class="alert-error" id="errMsg"></div>
+  <!-- RIGHT -->
+  <div class="right-col">
+    <!-- Active vehicles -->
+    <div class="panel">
+      <div class="panel-head">
+        Active Vehicles
+        <span class="panel-count" id="activeCount">0 parked</span>
       </div>
-
-      <div class="receipt" id="receipt">
-        <div class="receipt-title">✓ Exit Processed</div>
-        <div class="receipt-row">
-          <span class="receipt-label">Vehicle</span>
-          <span class="receipt-val" id="rVehicle">—</span>
-        </div>
-        <div class="receipt-row">
-          <span class="receipt-label">Exit Time</span>
-          <span class="receipt-val" id="rExit">—</span>
-        </div>
-        <div class="receipt-row">
-          <span class="receipt-label">Status</span>
-          <span class="receipt-val green">Slot Released</span>
-        </div>
-        <div class="receipt-row">
-          <span class="receipt-label">Thank You</span>
-          <span class="receipt-val gold">Drive Safe!</span>
-        </div>
-      </div>
+      <div id="vehicleList"></div>
     </div>
-  </main>
 
-  <script>
-    const API = 'http://localhost:5000';
+    <!-- Receipt (shown after exit) -->
+    <div class="receipt" id="receipt">
+      <div class="receipt-head">✓ Exit Confirmed</div>
+      <div class="r-row"><span class="r-label">Vehicle</span><span class="r-val r-gold" id="rVeh">—</span></div>
+      <div class="r-row"><span class="r-label">Gate</span><span class="r-val" id="rGate">—</span></div>
+      <div class="r-row"><span class="r-label">Slot Released</span><span class="r-val r-green" id="rSlot">—</span></div>
+      <div class="r-row"><span class="r-label">Exit Time</span><span class="r-val" id="rTime">—</span></div>
+      <div class="r-row"><span class="r-label">Status</span><span class="r-val r-green">Slot Freed ✓</span></div>
+      <div class="r-row"><span class="r-label">Thank You</span><span class="r-val r-gold">Drive Safe! 🚗</span></div>
+    </div>
+  </div>
+</main>
 
-    // Set current time
-    const now = new Date();
-    document.getElementById('exitTime').value = now.toTimeString().slice(0,5);
+<script src="px_state.js"></script>
+<script>
+  PX.requireAuth();
 
-    async function processExit() {
-      const vehicle = document.getElementById('vehicleNumber').value.trim().toUpperCase();
-      const exitTime = document.getElementById('exitTime').value;
-      const errEl = document.getElementById('errMsg');
+  // Set current time
+  document.getElementById('exitTime').value = new Date().toTimeString().slice(0,5);
 
-      errEl.style.display = 'none';
-
-      if (!vehicle) { errEl.textContent = 'Please enter a vehicle number.'; errEl.style.display = 'block'; return; }
-      if (!exitTime) { errEl.textContent = 'Please enter exit time.'; errEl.style.display = 'block'; return; }
-
-      try {
-        const res = await fetch(`${API}/api/exit-vehicle`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ vehicleNumber: vehicle, exitTime })
-        });
-        const data = await res.json();
-        if (!data.success) {
-          errEl.textContent = data.message || 'Vehicle not found in records.';
-          errEl.style.display = 'block';
-          return;
-        }
-      } catch {
-        // Offline — still show receipt
-      }
-
-      // Show receipt
-      document.getElementById('rVehicle').textContent = vehicle;
-      document.getElementById('rExit').textContent = exitTime;
-      document.getElementById('receipt').style.display = 'block';
-
-      // Clear form
-      document.getElementById('vehicleNumber').value = '';
+  function renderVehicles() {
+    const active = PX.getVehicles().filter(v => !v.exitTime);
+    document.getElementById('activeCount').textContent = `${active.length} parked`;
+    const list = document.getElementById('vehicleList');
+    if (!active.length) {
+      list.innerHTML = '<div class="no-vehicles">No vehicles currently parked.</div>';
+      return;
     }
-  </script>
+    list.innerHTML = active.map(v => `
+      <div class="veh-row" onclick="autofill('${v.vehicleNumber}')">
+        <div class="veh-left">
+          <div class="veh-icon">🚗</div>
+          <div>
+            <div class="veh-num">${v.vehicleNumber}</div>
+            <div class="veh-info">${v.gate} · Slot ${v.slotId} · Entry ${v.entryTime}</div>
+          </div>
+        </div>
+        <span class="veh-status">ACTIVE</span>
+      </div>`).join('');
+  }
+
+  // Click a vehicle row to autofill
+  function autofill(num) {
+    document.getElementById('vNum').value = num;
+    document.getElementById('vNum').focus();
+  }
+
+  function processExit() {
+    const vehicle  = document.getElementById('vNum').value.trim().toUpperCase();
+    const exitTime = document.getElementById('exitTime').value;
+    const errEl    = document.getElementById('errMsg');
+    errEl.style.display = 'none';
+
+    if (!vehicle)  { errEl.textContent = 'Please enter a vehicle number.'; errEl.style.display = 'block'; return; }
+    if (!exitTime) { errEl.textContent = 'Please enter exit time.';        errEl.style.display = 'block'; return; }
+
+    const result = PX.exitVehicle(vehicle, exitTime);
+
+    if (!result) {
+      errEl.textContent = `No active record found for "${vehicle}". Check the vehicle number or click a row on the right.`;
+      errEl.style.display = 'block';
+      return;
+    }
+
+    // Show receipt
+    document.getElementById('rVeh').textContent  = result.vehicleNumber;
+    document.getElementById('rGate').textContent = result.gate;
+    document.getElementById('rSlot').textContent = `Slot ${result.slotId}`;
+    document.getElementById('rTime').textContent = exitTime;
+    document.getElementById('receipt').style.display = 'block';
+
+    // Clear form & refresh list
+    document.getElementById('vNum').value = '';
+    renderVehicles();
+  }
+
+  document.getElementById('vNum').addEventListener('keydown', e => { if (e.key === 'Enter') processExit(); });
+
+  renderVehicles();
+</script>
 </body>
 </html>
